@@ -1,0 +1,6 @@
+# Dependencias de Node.js
+node_modules/
+
+# Credenciales y configuración (CRÍTICO)
+.env
+

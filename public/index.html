@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kit Emprendedores - Login</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 350px;
+        }
+        h2 { text-align: center; color: #333; margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; margin-bottom: 0.5rem; color: #666; font-size: 0.9rem; }
+        input {
+            width: 100%; padding: 0.8rem; border: 1px solid #ccc; 
+            border-radius: 5px; box-sizing: border-box; font-size: 1rem;
+        }
+        button {
+            width: 100%; padding: 0.8rem; background-color: #0056b3; 
+            color: white; border: none; border-radius: 5px; 
+            font-size: 1rem; cursor: pointer; transition: background 0.3s;
+        }
+        button:hover { background-color: #004494; }
+        #error-message {
+            color: #dc3545; text-align: center; margin-top: 1rem; 
+            font-size: 0.9rem; display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Kit Emprendedores</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="tenant_id">Workspace ID (Tenant)</label>
+                <input type="number" id="tenant_id" required placeholder="e.g. 1">
+            </div>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" required placeholder="Enter your username">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required placeholder="Enter your password">
+            </div>
+            <button type="submit">Sign In</button>
+            <div id="error-message"></div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const tenant_id = document.getElementById('tenant_id').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('error-message');
+
+            try {
+                const response = await fetch('http://localhost:3000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tenant_id, username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('tenant_id', data.tenant_id);
+                    localStorage.setItem('perfil_id', data.perfil_id);
+                    window.location.href = 'dashboard.html';
+                } else {
+                    errorDiv.style.display = 'block';
+                    errorDiv.textContent = data.error || 'Authentication failed';
+                }
+            } catch (err) {
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = 'Server connection failed.';
+            }
+        });
+    </script>
+</body>
+</html>
