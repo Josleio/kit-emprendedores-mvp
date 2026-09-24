@@ -22,6 +22,7 @@ function requireJwt(req, res, next) {
         }
         return next();
     } catch (error) {
+        console.error("❌ JWT REJECTED:", error.message);
         return res.status(401).json({ error: 'Invalid or expired token' });
     }
 }
@@ -44,12 +45,13 @@ function handleRouteError(error, res) {
     if (error.code === '23505') {
         return res.status(409).json({ error: 'Username already exists in this tenant' });
     }
-    console.error(error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error', details: error.message });
 }
 
 router.post('/login', async (req, res) => {
     const { tenant_id: tenantId, username, password } = req.body;
+    const { password: ignoredPassword, ...safeBody } = req.body;
+    console.log('📥 LOGIN REQUEST:', safeBody);
     const tenantNumber = Number(tenantId);
     const usernameError = validateText(username, 'Username', 50);
 
@@ -57,11 +59,12 @@ router.post('/login', async (req, res) => {
         return res.status(400).json({ error: usernameError || 'Valid tenant, username and password are required' });
     }
     if (!jwtSecret) {
-        return res.status(500).json({ error: 'JWT_SECRET is not configured' });
+        return res.status(500).json({ error: 'JWT_SECRET is not configured', details: 'JWT_SECRET is not configured' });
     }
 
     try {
         const user = await withTenantTransaction({ tenantId: tenantNumber, perfilId: 0 }, async (client) => {
+            console.log('🔎 LOGIN DB QUERY:', { tenantId: tenantNumber, username: username.trim() });
             const result = await client.query(`
                 SELECT usuario_id, tenant_id, perfil_id, username, password_hash
                 FROM app.usuarios
@@ -73,13 +76,16 @@ router.post('/login', async (req, res) => {
             }
 
             const candidate = result.rows[0];
-            return await bcrypt.compare(password, candidate.password_hash) ? candidate : null;
+            const passwordMatches = await bcrypt.compare(password, candidate.password_hash);
+            console.log('🔐 LOGIN BCRYPT CHECK:', { username: candidate.username, passwordMatches });
+            return passwordMatches ? candidate : null;
         });
 
         if (!user) {
             return res.status(401).json({ error: 'Invalid credentials or tenant' });
         }
 
+        console.log('🔑 LOGIN JWT SIGNING:', { userId: user.usuario_id, tenantId: user.tenant_id, perfilId: user.perfil_id });
         const token = jwt.sign({
             userId: user.usuario_id,
             tenantId: user.tenant_id,
@@ -92,6 +98,7 @@ router.post('/login', async (req, res) => {
             user: { id: user.usuario_id, username: user.username, perfilId: user.perfil_id },
         });
     } catch (error) {
+        console.error("❌ BACKEND ERROR:", error.stack);
         return handleRouteError(error, res);
     }
 });
@@ -111,6 +118,7 @@ router.get('/menu', requireJwt, async (req, res) => {
         });
         return res.json(menu);
     } catch (error) {
+        console.error("❌ BACKEND ERROR:", error.stack);
         return handleRouteError(error, res);
     }
 });
@@ -123,6 +131,7 @@ router.get('/catalog', requireJwt, async (req, res) => {
         });
         return res.json(products);
     } catch (error) {
+        console.error("❌ BACKEND ERROR:", error.stack);
         return handleRouteError(error, res);
     }
 });
@@ -140,6 +149,7 @@ router.get('/users', requireJwt, async (req, res) => {
         });
         return res.json(users);
     } catch (error) {
+        console.error("❌ BACKEND ERROR:", error.stack);
         return handleRouteError(error, res);
     }
 });
@@ -165,6 +175,7 @@ router.post('/users', requireJwt, async (req, res) => {
         });
         return res.status(201).json(user);
     } catch (error) {
+        console.error("❌ BACKEND ERROR:", error.stack);
         return handleRouteError(error, res);
     }
 });
@@ -201,6 +212,7 @@ router.put('/users/:id', requireJwt, async (req, res) => {
         }
         return res.json(user);
     } catch (error) {
+        console.error("❌ BACKEND ERROR:", error.stack);
         return handleRouteError(error, res);
     }
 });
@@ -221,6 +233,7 @@ router.delete('/users/:id', requireJwt, async (req, res) => {
         }
         return res.status(204).send();
     } catch (error) {
+        console.error("❌ BACKEND ERROR:", error.stack);
         return handleRouteError(error, res);
     }
 });

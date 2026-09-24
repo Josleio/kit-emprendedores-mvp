@@ -16,16 +16,17 @@ app.get('/health', async (req, res) => {
         await pool.query('SELECT 1');
         return res.json({ status: 'ok' });
     } catch (error) {
+        console.error("❌ BACKEND ERROR:", error.stack);
         return res.status(503).json({ status: 'unavailable' });
     }
 });
 
 app.use((error, req, res, next) => {
-    console.error(error);
+    console.error("❌ BACKEND ERROR:", error.stack);
     if (res.headersSent) {
         return next(error);
     }
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error', details: error.message });
 });
 
 const server = app.listen(port, () => {
