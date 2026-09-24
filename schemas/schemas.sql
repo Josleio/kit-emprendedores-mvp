@@ -1,3 +1,4 @@
+
 -- ==========================================
 -- 01. CLEANUP & SCHEMA RECREATION
 -- ==========================================
@@ -118,3 +119,13 @@ CREATE POLICY usuarios_delete ON app.usuarios FOR DELETE
         tenant_id = current_setting('app.current_tenant', true)::int 
         AND current_setting('app.current_perfil', true) = '1'
     );
+
+
+--dba permits for seeding
+ALTER SCHEMA app OWNER TO app_dba;
+ALTER TABLE app.tenants OWNER TO app_dba;
+ALTER TABLE app.perfiles OWNER TO app_dba;
+ALTER TABLE app.modulos OWNER TO app_dba;
+ALTER TABLE app.permisos OWNER TO app_dba;
+ALTER TABLE app.usuarios OWNER TO app_dba;
+ALTER TABLE app.productos OWNER TO app_dba;

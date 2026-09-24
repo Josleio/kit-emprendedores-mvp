@@ -9,6 +9,14 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
+pool.query('SELECT NOW()', (err, res) => {
+    if (err) {
+        console.error('❌ ERROR CRÍTICO: No se pudo conectar a PostgreSQL', err.stack);
+    } else {
+        console.log('✅ Base de datos conectada exitosamente. Hora del servidor DB:', res.rows[0].now);
+    }
+});
+
 async function withTenantTransaction(context, callback) {
     const client = await pool.connect();
 
