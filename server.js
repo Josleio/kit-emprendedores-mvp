@@ -1,74 +1,45 @@
 require('dotenv').config();
+const path = require('path');
 const express = require('express');
-const cors = require('cors');
-const { Pool } = require('pg');
-const bcrypt = require('bcrypt');
+const routes = require('./routes');
+const { pool } = require('./db');
 
 const app = express();
-app.use(cors());
+const port = Number(process.env.PORT) || 3000;
+
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/api', routes);
 
-const pool = new Pool({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT,
-});
-
-// Test DB Connection
-pool.query('SELECT NOW()', (err, res) => {
-    if (err) console.error('❌ DATABASE CONNECTION FAILED:', err.message);
-    else console.log('✅ SUCCESSFULLY CONNECTED TO POSTGRESQL!');
-});
-
-app.post('/api/login', async (req, res) => {
-    const { tenant_id, username, password } = req.body;
-    
-    console.log(`\n---> NEW LOGIN ATTEMPT for Tenant: ${tenant_id}, User: ${username}`);
-
-    // We MUST use a single client from the pool to keep the SET LOCAL context alive
-    const client = await pool.connect();
-
+app.get('/health', async (req, res) => {
     try {
-        await client.query('BEGIN');
-        
-        await client.query("SELECT set_config('app.current_tenant', $1::text, true)", [tenant_id]);
-        
-        const query = 'SELECT usuario_id, tenant_id, perfil_id, password_hash FROM app.usuarios WHERE username = $1 AND is_active = true';
-        const result = await client.query(query, [username]);
-
-        if (result.rows.length === 0) {
-            console.log('---> FAIL: Database returned 0 rows. (User hidden by RLS, wrong username, or is_active is null)');
-            await client.query('ROLLBACK');
-            return res.status(401).json({ error: 'Invalid credentials or tenant' });
-        }
-
-        const user = result.rows[0];
-        const isValidPassword = await bcrypt.compare(password, user.password_hash);
-
-        if (isValidPassword) {
-            await client.query('COMMIT');
-            console.log('---> SUCCESS: User logged in.');
-            res.json({
-                message: 'Login successful',
-                token: 'mock-jwt-token-12345', 
-                tenant_id: user.tenant_id,
-                perfil_id: user.perfil_id
-            });
-        } else {
-            console.log('---> FAIL: Bcrypt rejected the password.');
-            await client.query('ROLLBACK');
-            res.status(401).json({ error: 'Invalid credentials' });
-        }
-    } catch (err) {
-        await client.query('ROLLBACK');
-        console.error('---> FATAL ERROR:', err);
-        res.status(500).json({ error: 'Internal server error' });
-    } finally {
-        client.release(); 
+        await pool.query('SELECT 1');
+        return res.json({ status: 'ok' });
+    } catch (error) {
+        return res.status(503).json({ status: 'unavailable' });
     }
 });
 
-const PORT = 3000;
-app.listen(PORT, () => console.log(`Backend server running on http://localhost:${PORT}`));
+app.use((error, req, res, next) => {
+    console.error(error);
+    if (res.headersSent) {
+        return next(error);
+    }
+    return res.status(500).json({ error: 'Internal server error' });
+});
+
+const server = app.listen(port, () => {
+    console.log(`Backend server running on http://localhost:${port}`);
+});
+
+function closeServer() {
+    server.close(async () => {
+        await pool.end();
+        process.exit(0);
+    });
+}
+
+process.on('SIGINT', closeServer);
+process.on('SIGTERM', closeServer);
+
+module.exports = app;

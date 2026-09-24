@@ -3,108 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Administration</title>
+    <title>Kit Emprendedores - Dashboard</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            margin: 0;
-        }
-        header {
-            background-color: #0056b3;
-            color: white;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .logout-btn {
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .logout-btn:hover {
-            background-color: #c82333;
-        }
-        .container {
-            padding: 2rem;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-        .status-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-bottom: 2rem;
-        }
-        .status-card h3 {
-            margin-top: 0;
-            color: #333;
-        }
-        .data-row {
-            display: flex;
-            margin-bottom: 0.5rem;
-        }
-        .data-label {
-            font-weight: bold;
-            width: 150px;
-            color: #555;
-        }
+        :root { color-scheme: light; font-family: Segoe UI, Tahoma, sans-serif; }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: #f4f7f6; color: #1f2933; }
+        header { background: #0056b3; color: #fff; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+        header h1 { font-size: 1.3rem; margin: 0; }
+        button { border: 0; border-radius: 4px; cursor: pointer; padding: .65rem 1rem; font-weight: 600; }
+        .logout-btn, .danger { background: #dc3545; color: #fff; }
+        .primary { background: #0056b3; color: #fff; }
+        .secondary { background: #e5e7eb; color: #1f2933; }
+        main { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+        .layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+        .panel { background: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,.05); margin-bottom: 1.5rem; }
+        h2 { margin-top: 0; font-size: 1.2rem; }
+        .meta { color: #5b6770; margin: .25rem 0; }
+        .menu { display: flex; gap: .5rem; flex-wrap: wrap; margin: 1rem 0 1.5rem; }
+        .menu-item { background: #e7f0fa; color: #0056b3; padding: .5rem .75rem; border-radius: 4px; }
+        label { display: block; margin: .8rem 0 .3rem; font-weight: 600; }
+        input, select { width: 100%; padding: .7rem; border: 1px solid #c8d0d8; border-radius: 4px; font-size: 1rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { text-align: left; padding: .7rem; border-bottom: 1px solid #e5e7eb; }
+        .actions { display: flex; gap: .4rem; flex-wrap: wrap; }
+        .message { min-height: 1.4rem; margin-top: .8rem; color: #8a1c1c; }
+        .success { color: #176b3a; }
+        .hidden { display: none !important; }
+        @media (max-width: 600px) { main { padding: 1rem; } header { padding: 1rem; } th, td { font-size: .9rem; } }
     </style>
 </head>
 <body>
-
     <header>
-        <h2>System Dashboard</h2>
-        <button class="logout-btn" onclick="logout()">Log Out</button>
+        <h1>Kit Emprendedores</h1>
+        <button class="logout-btn" id="logout-button">Log out</button>
     </header>
 
-    <div class="container">
-        <div class="status-card">
-            <h3>Authentication Status</h3>
-            <p>Welcome! You have successfully bypassed the security gateway.</p>
-            
-            <div class="data-row">
-                <span class="data-label">Your Tenant ID:</span>
-                <span id="display-tenant">Loading...</span>
-            </div>
-            <div class="data-row">
-                <span class="data-label">Your Profile ID:</span>
-                <span id="display-profile">Loading...</span>
-            </div>
-        </div>
-        
-        <!-- Future placeholder for the Data Table -->
-        <div class="status-card">
-            <h3>Module: Catalog / Users</h3>
-            <p><em>Waiting for Node.js GET endpoints to populate this table...</em></p>
-        </div>
-    </div>
+    <main>
+        <section class="panel">
+            <h2>Workspace</h2>
+            <p class="meta">Tenant: <strong id="tenant-display">Authenticated</strong></p>
+            <p class="meta">Profile: <strong id="profile-display">Loading...</strong></p>
+            <nav class="menu" id="menu" aria-label="Authorized modules"></nav>
+        </section>
+
+        <section class="panel" id="catalog-container">
+            <h2>Catalog</h2>
+            <table>
+                <thead><tr><th>Product</th><th>Price</th><th>Stock</th></tr></thead>
+                <tbody id="catalog-body"></tbody>
+            </table>
+            <p class="message" id="catalog-message"></p>
+        </section>
+
+        <section class="panel hidden" id="users-container">
+            <h2>User management</h2>
+            <form id="create-user-form">
+                <label for="username">Username</label>
+                <input id="username" name="username" maxlength="50" required>
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" minlength="4" required>
+                <label for="profile_id">Profile</label>
+                <select id="profile_id" name="profile_id" required>
+                    <option value="1">Admin</option>
+                    <option value="2">Cashier</option>
+                </select>
+                <button class="primary" type="submit">Create user</button>
+            </form>
+            <p class="message" id="user-message"></p>
+            <table>
+                <thead><tr><th>Username</th><th>Profile</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody id="users-body"></tbody>
+            </table>
+        </section>
+    </main>
 
     <script>
-        // 1. Security Check: Is the user logged in?
         const token = localStorage.getItem('token');
+        const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+        const usersContainer = document.getElementById('users-container');
+        const userMessage = document.getElementById('user-message');
+
         if (!token) {
-            // Kick them out if they don't have a token
             window.location.href = 'index.html';
         }
 
-        // 2. Load the data into the UI
-        document.getElementById('display-tenant').textContent = localStorage.getItem('tenant_id');
-        
-        const profileId = localStorage.getItem('perfil_id');
-        let roleName = profileId === '1' ? 'Administrador' : 'Cajero';
-        document.getElementById('display-profile').textContent = `${profileId} (${roleName})`;
-
-        // 3. Logout Function
-        function logout() {
-            localStorage.clear(); // Wipe the security tokens
-            window.location.href = 'index.html'; // Redirect to login
+        async function apiRequest(path, options = {}) {
+            const response = await fetch(`/api${path}`, {
+                ...options,
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...(options.headers || {}) }
+            });
+            if (response.status === 401) {
+                localStorage.clear();
+                window.location.href = 'index.html';
+                throw new Error('Session expired');
+            }
+            const data = response.status === 204 ? null : await response.json();
+            if (!response.ok) throw new Error(data?.error || 'Request failed');
+            return data;
         }
+
+        function showMessage(element, message, success = false) {
+            element.textContent = message;
+            element.className = `message${success ? ' success' : ''}`;
+        }
+
+        async function loadCatalog() {
+            try {
+                const products = await apiRequest('/catalog');
+                document.getElementById('catalog-body').innerHTML = products.map((product) => `
+                    <tr><td>${escapeHtml(product.nombre)}</td><td>${Number(product.precio).toFixed(2)}</td><td>${product.stock}</td></tr>
+                `).join('');
+            } catch (error) {
+                showMessage(document.getElementById('catalog-message'), error.message);
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const users = await apiRequest('/users');
+                document.getElementById('users-body').innerHTML = users.map((user) => `
+                    <tr>
+                        <td>${escapeHtml(user.username)}</td>
+                        <td>${escapeHtml(user.perfil)}</td>
+                        <td>${user.is_active ? 'Active' : 'Inactive'}</td>
+                        <td class="actions">
+                            <button class="secondary" data-action="edit" data-id="${user.usuario_id}" data-username="${escapeHtml(user.username)}" data-profile="${user.perfil_id}" data-active="${user.is_active}">Edit</button>
+                            <button class="danger" data-action="delete" data-id="${user.usuario_id}">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                showMessage(userMessage, error.message);
+            }
+        }
+
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
+        }
+
+        document.getElementById('create-user-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const form = new FormData(event.target);
+            try {
+                await apiRequest('/users', { method: 'POST', body: JSON.stringify({ username: form.get('username'), password: form.get('password'), perfil_id: Number(form.get('profile_id')) }) });
+                event.target.reset();
+                showMessage(userMessage, 'User created.', true);
+                await loadUsers();
+            } catch (error) {
+                showMessage(userMessage, error.message);
+            }
+        });
+
+        document.getElementById('users-body').addEventListener('click', async (event) => {
+            const button = event.target.closest('button');
+            if (!button) return;
+            const userId = button.dataset.id;
+            try {
+                if (button.dataset.action === 'delete') {
+                    if (!window.confirm('Delete this user?')) return;
+                    await apiRequest(`/users/${userId}`, { method: 'DELETE' });
+                } else {
+                    const username = window.prompt('Username', button.dataset.username);
+                    if (!username) return;
+                    const profileId = window.prompt('Profile ID: 1 Admin, 2 Cashier', button.dataset.profile);
+                    const isActive = window.confirm('Keep this user active?');
+                    await apiRequest(`/users/${userId}`, { method: 'PUT', body: JSON.stringify({ username, perfil_id: Number(profileId), is_active: isActive }) });
+                }
+                showMessage(userMessage, 'User updated.', true);
+                await loadUsers();
+            } catch (error) {
+                showMessage(userMessage, error.message);
+            }
+        });
+
+        async function initialize() {
+            try {
+                const menu = await apiRequest('/menu');
+                document.getElementById('menu').innerHTML = menu.map((module) => `<span class="menu-item">${escapeHtml(module.nombre)}</span>`).join('');
+                const userModule = menu.find((module) => module.nombre.toLowerCase() === 'usuarios');
+                const catalogModule = menu.find((module) => module.nombre.toLowerCase() === 'catalogo');
+                usersContainer.classList.toggle('hidden', !userModule);
+                document.getElementById('catalog-container').classList.toggle('hidden', !catalogModule);
+                document.getElementById('profile-display').textContent = storedUser.perfilId === 1 ? 'Admin' : 'Cashier';
+                if (userModule) await loadUsers();
+                if (catalogModule) await loadCatalog();
+            } catch (error) {
+                showMessage(userMessage, error.message);
+            }
+        }
+
+        document.getElementById('logout-button').addEventListener('click', () => {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        });
+
+        initialize();
     </script>
 </body>
 </html>

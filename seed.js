@@ -16,10 +16,8 @@ async function seedDatabase() {
     try {
         await client.query('BEGIN');
 
-        // 1. Clean Slate: Wipe old mock data and reset IDs so the script never fails on duplicates
-        await client.query('TRUNCATE app.usuarios, app.perfiles, app.tenants CASCADE');
+        await client.query('TRUNCATE app.usuarios, app.productos, app.perfiles, app.modulos, app.tenants RESTART IDENTITY CASCADE');
 
-        // 2. Insert Tenant and instantly capture the database-generated ID
         const tenantResult = await client.query(`
             INSERT INTO app.tenants (nombre, estado) 
             VALUES ('Tienda Emprendedor MVP', 'activo') 
@@ -27,25 +25,51 @@ async function seedDatabase() {
         `);
         const generatedTenantId = tenantResult.rows[0].tenant_id;
 
-        // 3. Insert Profile and capture the generated ID
-        const profileResult = await client.query(`
-            INSERT INTO app.perfiles (nombre, descripcion) 
-            VALUES ('Administrador', 'Control total de la tienda') 
-            RETURNING perfil_id;
-        `);
-        const generatedProfileId = profileResult.rows[0].perfil_id;
-
-        // 4. Inject the dynamic Tenant ID using the secure set_config function
-        await client.query(`SELECT set_config('app.current_tenant', $1::text, true)`, [generatedTenantId]);
-
-        // 5. Hash the password natively in Node.js (No hardcoded hashes)
-        const hashedPassword = await bcrypt.hash('admin123', 10);
-        
-        // 6. Create the user. Forcing is_active = true ensures the login query finds it.
         await client.query(`
-            INSERT INTO app.usuarios (tenant_id, perfil_id, username, password_hash, is_active) 
-            VALUES ($1, $2, 'admin', $3, true)
-        `, [generatedTenantId, generatedProfileId, hashedPassword]);
+            INSERT INTO app.perfiles (nombre, descripcion)
+            VALUES
+                ('Administrador', 'Control total de la tienda'),
+                ('Cajero', 'Consulta catalogo sin administrar usuarios');
+        `);
+
+        const moduleResult = await client.query(`
+            INSERT INTO app.modulos (nombre, ruta)
+            VALUES
+                ('Catalogo', '/catalog'),
+                ('Usuarios', '/users')
+            RETURNING modulo_id, nombre;
+        `);
+
+        const catalogModule = moduleResult.rows.find((module) => module.nombre === 'Catalogo');
+        const usersModule = moduleResult.rows.find((module) => module.nombre === 'Usuarios');
+
+        await client.query(`
+            INSERT INTO app.permisos (perfil_id, modulo_id, can_create, can_update, can_delete)
+            VALUES
+                (1, $1, false, false, false),
+                (1, $2, true, true, true),
+                (2, $1, false, false, false)
+        `, [catalogModule.modulo_id, usersModule.modulo_id]);
+
+        await client.query(`SELECT set_config('app.current_tenant', $1::text, true)`, [generatedTenantId]);
+        await client.query("SELECT set_config('app.current_perfil', $1::text, true)", ['1']);
+
+        const adminPasswordHash = await bcrypt.hash('admin123', 12);
+        const cashierPasswordHash = await bcrypt.hash('cashier123', 12);
+        
+        await client.query(`
+            INSERT INTO app.usuarios (tenant_id, perfil_id, username, password_hash, is_active)
+            VALUES
+                ($1, 1, 'admin', $2, true),
+                ($1, 2, 'cashier', $3, true)
+        `, [generatedTenantId, adminPasswordHash, cashierPasswordHash]);
+
+        await client.query(`
+            INSERT INTO app.productos (tenant_id, nombre, precio, stock)
+            VALUES
+                ($1, 'Cuaderno Emprendedor', 12.50, 25),
+                ($1, 'Kit de Marcadores', 8.75, 40)
+        `, [generatedTenantId]);
 
         await client.query('COMMIT');
         
@@ -55,6 +79,8 @@ async function seedDatabase() {
         console.log(`Tenant ID : ${generatedTenantId}`);
         console.log(`Username  : admin`);
         console.log(`Password  : admin123`);
+        console.log(`Username  : cashier`);
+        console.log(`Password  : cashier123`);
         console.log(`-----------------------------------`);
         
     } catch (err) {
