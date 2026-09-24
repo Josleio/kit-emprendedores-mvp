@@ -29,6 +29,13 @@
         .message { min-height: 1.4rem; margin-top: .8rem; color: #8a1c1c; }
         .success { color: #176b3a; }
         .hidden { display: none !important; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; }
+        .modal-overlay.active { display: flex; justify-content: center; align-items: center; }
+        .modal { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); max-width: 500px; width: 90%; }
+        .modal h3 { margin-top: 0; color: #333; }
+        .modal-actions { display: flex; gap: 0.5rem; margin-top: 1.5rem; justify-content: flex-end; }
+        .modal-actions button { flex: 0 1 auto; }
+        .modal-close { background: #e5e7eb; }
         @media (max-width: 600px) { main { padding: 1rem; } header { padding: 1rem; } th, td { font-size: .9rem; } }
     </style>
 </head>
@@ -37,23 +44,77 @@
         <h1>Kit Emprendedores</h1>
         <button class="logout-btn" id="logout-button">Log out</button>
     </header>
-
     <main>
+        <h2 id="dashboard-title"></h2>
         <section class="panel">
             <h2>Workspace</h2>
             <p class="meta">Tenant: <strong id="tenant-display">Authenticated</strong></p>
             <p class="meta">Profile: <strong id="profile-display">Loading...</strong></p>
             <nav class="menu" id="menu" aria-label="Authorized modules"></nav>
         </section>
-
         <section class="panel" id="catalog-container">
             <h2>Catalog</h2>
+            <button class="primary" id="add-product-btn" style="margin-bottom: 1rem;">+ Add Product</button>
             <table>
-                <thead><tr><th>Product</th><th>Price</th><th>Stock</th></tr></thead>
+                <thead><tr><th>Product</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead>
                 <tbody id="catalog-body"></tbody>
             </table>
             <p class="message" id="catalog-message"></p>
         </section>
+
+        <!-- Product Modal -->
+        <div id="product-modal-overlay" class="modal-overlay">
+            <div class="modal">
+                <h3 id="product-modal-title">Add Product</h3>
+                <form id="product-modal-form">
+                    <label for="modal-product-name">Product Name</label>
+                    <input id="modal-product-name" name="nombre" maxlength="100" required>
+                    <label for="modal-product-price">Price</label>
+                    <input id="modal-product-price" name="precio" type="number" step="0.01" min="0" required>
+                    <label for="modal-product-stock">Stock</label>
+                    <input id="modal-product-stock" name="stock" type="number" min="0" required>
+                    <div class="modal-actions">
+                        <button type="button" class="modal-close" id="product-modal-cancel">Cancel</button>
+                        <button type="submit" class="primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- User Edit Modal -->
+        <div id="user-modal-overlay" class="modal-overlay">
+            <div class="modal">
+                <h3>Edit User Role</h3>
+                <form id="user-modal-form">
+                    <label for="modal-user-profile">Profile</label>
+                    <select id="modal-user-profile" name="profile_id" required>
+                        <option value="1">Admin</option>
+                        <option value="2">Cashier</option>
+                    </select>
+                    <label for="modal-user-status">Status</label>
+                    <select id="modal-user-status" name="is_active" required>
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                    </select>
+                    <div class="modal-actions">
+                        <button type="button" class="modal-close" id="user-modal-cancel">Cancel</button>
+                        <button type="submit" class="primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Global Delete Confirmation Modal -->
+        <div id="delete-modal-overlay" class="modal-overlay">
+            <div class="modal">
+                <h3>Confirm Deletion</h3>
+                <p>Are you sure you want to delete this item? This action cannot be undone.</p>
+                <div class="modal-actions">
+                    <button type="button" class="modal-close" id="delete-modal-cancel">Cancel</button>
+                    <button type="button" class="danger" id="delete-modal-confirm">Delete</button>
+                </div>
+            </div>
+        </div>
 
         <section class="panel hidden" id="users-container">
             <h2>User management</h2>
@@ -67,7 +128,7 @@
                     <option value="1">Admin</option>
                     <option value="2">Cashier</option>
                 </select>
-                <button class="primary" type="submit">Create user</button>
+                <button class="primary" type="submit" style="margin-top:0.8rem;">Create user</button>
             </form>
             <p class="message" id="user-message"></p>
             <table>
@@ -82,10 +143,15 @@
         const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
         const usersContainer = document.getElementById('users-container');
         const userMessage = document.getElementById('user-message');
+        const catalogMessage = document.getElementById('catalog-message');
+        
+        let currentMenu = null;
+        let currentProductId = null;
+        let currentUserId = null;
+        let currentUsername = null;
+        let deleteActionCallback = null;
 
-        if (!token) {
-            window.location.href = 'index.html';
-        }
+        if (!token) window.location.href = 'index.html';
 
         async function apiRequest(path, options = {}) {
             const response = await fetch(`/api${path}`, {
@@ -107,14 +173,34 @@
             element.className = `message${success ? ' success' : ''}`;
         }
 
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>'"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[c]));
+        }
+
         async function loadCatalog() {
             try {
                 const products = await apiRequest('/catalog');
                 document.getElementById('catalog-body').innerHTML = products.map((product) => `
-                    <tr><td>${escapeHtml(product.nombre)}</td><td>${Number(product.precio).toFixed(2)}</td><td>${product.stock}</td></tr>
+                    <tr>
+                        <td>${escapeHtml(product.nombre)}</td>
+                        <td>${Number(product.precio).toFixed(2)}</td>
+                        <td>${product.stock}</td>
+                        <td class="actions">
+                            <button class="secondary edit-product-btn" data-id="${product.producto_id}" data-nombre="${escapeHtml(product.nombre)}" data-precio="${product.precio}" data-stock="${product.stock}">Edit</button>
+                            <button class="danger delete-btn" data-id="${product.producto_id}">Delete</button>
+                        </td>
+                    </tr>
                 `).join('');
+
+                if (currentMenu) {
+                    const catalogModule = currentMenu.find((m) => m.nombre.toLowerCase() === 'catalogo');
+                    if (catalogModule) {
+                        if (!catalogModule.can_delete) document.querySelectorAll('.delete-btn').forEach(btn => btn.style.display = 'none');
+                        if (!catalogModule.can_update) document.querySelectorAll('.edit-product-btn').forEach(btn => btn.style.display = 'none');
+                    }
+                }
             } catch (error) {
-                showMessage(document.getElementById('catalog-message'), error.message);
+                showMessage(catalogMessage, error.message);
             }
         }
 
@@ -127,8 +213,8 @@
                         <td>${escapeHtml(user.perfil)}</td>
                         <td>${user.is_active ? 'Active' : 'Inactive'}</td>
                         <td class="actions">
-                            <button class="secondary" data-action="edit" data-id="${user.usuario_id}" data-username="${escapeHtml(user.username)}" data-profile="${user.perfil_id}" data-active="${user.is_active}">Edit</button>
-                            <button class="danger" data-action="delete" data-id="${user.usuario_id}">Delete</button>
+                            <button class="secondary edit-user-btn" data-id="${user.usuario_id}" data-username="${escapeHtml(user.username)}" data-profile="${user.perfil_id}" data-active="${user.is_active}">Edit</button>
+                            <button class="danger delete-user-btn" data-id="${user.usuario_id}">Delete</button>
                         </td>
                     </tr>
                 `).join('');
@@ -137,9 +223,121 @@
             }
         }
 
-        function escapeHtml(value) {
-            return String(value).replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
+        // Modal Controllers
+        function openProductModal(product = null) {
+            currentProductId = product ? product.producto_id : null;
+            const form = document.getElementById('product-modal-form');
+            if (product) {
+                document.getElementById('product-modal-title').textContent = 'Edit Product';
+                document.getElementById('modal-product-name').value = product.nombre;
+                document.getElementById('modal-product-price').value = product.precio;
+                document.getElementById('modal-product-stock').value = product.stock;
+            } else {
+                document.getElementById('product-modal-title').textContent = 'Add Product';
+                form.reset();
+            }
+            document.getElementById('product-modal-overlay').classList.add('active');
         }
+
+        function closeProductModal() {
+            document.getElementById('product-modal-overlay').classList.remove('active');
+            currentProductId = null;
+        }
+
+        function openUserModal(user) {
+            currentUserId = user.usuario_id;
+            currentUsername = user.username;
+            document.getElementById('modal-user-profile').value = user.perfil_id;
+            document.getElementById('modal-user-status').value = user.is_active.toString();
+            document.getElementById('user-modal-overlay').classList.add('active');
+        }
+
+        function closeUserModal() {
+            document.getElementById('user-modal-overlay').classList.remove('active');
+            currentUserId = null;
+            currentUsername = null;
+        }
+
+        function openDeleteModal(callback) {
+            deleteActionCallback = callback;
+            document.getElementById('delete-modal-overlay').classList.add('active');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('delete-modal-overlay').classList.remove('active');
+            deleteActionCallback = null;
+        }
+
+        // Initialization
+        async function initialize() {
+            try {
+                document.getElementById('dashboard-title').textContent = `Welcome, ${storedUser.username} | ${storedUser.tenantNombre} (Tenant ID: ${storedUser.tenantId})`;
+                currentMenu = await apiRequest('/menu');
+                document.getElementById('menu').innerHTML = currentMenu.map((m) => `<span class="menu-item">${escapeHtml(m.nombre)}</span>`).join('');
+                
+                const userModule = currentMenu.find((m) => m.nombre.toLowerCase() === 'usuarios');
+                const catalogModule = currentMenu.find((m) => m.nombre.toLowerCase() === 'catalogo');
+                
+                usersContainer.classList.toggle('hidden', !userModule);
+                document.getElementById('catalog-container').classList.toggle('hidden', !catalogModule);
+                document.getElementById('profile-display').textContent = storedUser.perfilId === 1 ? 'Admin' : 'Cashier';
+
+                if (catalogModule) {
+                    if (!catalogModule.can_create) document.getElementById('add-product-btn').style.display = 'none';
+                    await loadCatalog();
+                }
+                if (userModule) await loadUsers();
+            } catch (error) {
+                showMessage(userMessage, error.message);
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('add-product-btn').addEventListener('click', () => openProductModal());
+        document.getElementById('product-modal-cancel').addEventListener('click', closeProductModal);
+        document.getElementById('user-modal-cancel').addEventListener('click', closeUserModal);
+        document.getElementById('delete-modal-cancel').addEventListener('click', closeDeleteModal);
+
+        document.getElementById('product-modal-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const form = new FormData(event.target);
+            try {
+                const data = { nombre: form.get('nombre'), precio: Number(form.get('precio')), stock: Number(form.get('stock')) };
+                if (currentProductId) {
+                    await apiRequest(`/products/${currentProductId}`, { method: 'PUT', body: JSON.stringify(data) });
+                    showMessage(catalogMessage, 'Product updated.', true);
+                } else {
+                    await apiRequest('/products', { method: 'POST', body: JSON.stringify(data) });
+                    showMessage(catalogMessage, 'Product created.', true);
+                }
+                closeProductModal();
+                await loadCatalog();
+            } catch (error) {
+                showMessage(catalogMessage, error.message);
+            }
+        });
+
+        document.getElementById('catalog-body').addEventListener('click', (event) => {
+            if (event.target.classList.contains('delete-btn')) {
+                const productId = event.target.dataset.id;
+                openDeleteModal(async () => {
+                    try {
+                        await apiRequest(`/products/${productId}`, { method: 'DELETE' });
+                        showMessage(catalogMessage, 'Product deleted.', true);
+                        await loadCatalog();
+                    } catch (error) {
+                        showMessage(catalogMessage, error.message);
+                    }
+                });
+            } else if (event.target.classList.contains('edit-product-btn')) {
+                openProductModal({
+                    producto_id: Number(event.target.dataset.id),
+                    nombre: event.target.dataset.nombre,
+                    precio: Number(event.target.dataset.precio),
+                    stock: Number(event.target.dataset.stock)
+                });
+            }
+        });
 
         document.getElementById('create-user-form').addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -154,43 +352,52 @@
             }
         });
 
-        document.getElementById('users-body').addEventListener('click', async (event) => {
-            const button = event.target.closest('button');
-            if (!button) return;
-            const userId = button.dataset.id;
+        document.getElementById('user-modal-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const form = new FormData(event.target);
             try {
-                if (button.dataset.action === 'delete') {
-                    if (!window.confirm('Delete this user?')) return;
-                    await apiRequest(`/users/${userId}`, { method: 'DELETE' });
-                } else {
-                    const username = window.prompt('Username', button.dataset.username);
-                    if (!username) return;
-                    const profileId = window.prompt('Profile ID: 1 Admin, 2 Cashier', button.dataset.profile);
-                    const isActive = window.confirm('Keep this user active?');
-                    await apiRequest(`/users/${userId}`, { method: 'PUT', body: JSON.stringify({ username, perfil_id: Number(profileId), is_active: isActive }) });
-                }
+                await apiRequest(`/users/${currentUserId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ 
+                        username: currentUsername,
+                        perfil_id: Number(form.get('profile_id')),
+                        is_active: form.get('is_active') === 'true'
+                    })
+                });
                 showMessage(userMessage, 'User updated.', true);
+                closeUserModal();
                 await loadUsers();
             } catch (error) {
                 showMessage(userMessage, error.message);
             }
         });
 
-        async function initialize() {
-            try {
-                const menu = await apiRequest('/menu');
-                document.getElementById('menu').innerHTML = menu.map((module) => `<span class="menu-item">${escapeHtml(module.nombre)}</span>`).join('');
-                const userModule = menu.find((module) => module.nombre.toLowerCase() === 'usuarios');
-                const catalogModule = menu.find((module) => module.nombre.toLowerCase() === 'catalogo');
-                usersContainer.classList.toggle('hidden', !userModule);
-                document.getElementById('catalog-container').classList.toggle('hidden', !catalogModule);
-                document.getElementById('profile-display').textContent = storedUser.perfilId === 1 ? 'Admin' : 'Cashier';
-                if (userModule) await loadUsers();
-                if (catalogModule) await loadCatalog();
-            } catch (error) {
-                showMessage(userMessage, error.message);
+        document.getElementById('users-body').addEventListener('click', (event) => {
+            if (event.target.classList.contains('delete-user-btn')) {
+                const userId = event.target.dataset.id;
+                openDeleteModal(async () => {
+                    try {
+                        await apiRequest(`/users/${userId}`, { method: 'DELETE' });
+                        showMessage(userMessage, 'User deleted.', true);
+                        await loadUsers();
+                    } catch (error) {
+                        showMessage(userMessage, error.message);
+                    }
+                });
+            } else if (event.target.classList.contains('edit-user-btn')) {
+                openUserModal({
+                    usuario_id: Number(event.target.dataset.id),
+                    username: event.target.dataset.username,
+                    perfil_id: Number(event.target.dataset.profile),
+                    is_active: event.target.dataset.active === 'true'
+                });
             }
-        }
+        });
+
+        document.getElementById('delete-modal-confirm').addEventListener('click', async () => {
+            if (deleteActionCallback) await deleteActionCallback();
+            closeDeleteModal();
+        });
 
         document.getElementById('logout-button').addEventListener('click', () => {
             localStorage.clear();
