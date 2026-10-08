@@ -5,45 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kit Emprendedores - Login</title>
     <style>
+        * { box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
+            background: linear-gradient(135deg, #e7f0fa 0%, #f4f7f6 55%, #dfeafa 100%);
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            padding: 1rem;
         }
         .login-container {
             background: white;
-            padding: 2.5rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 2.5rem 2.2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 86, 179, 0.12);
             width: 100%;
-            max-width: 350px;
+            max-width: 380px;
         }
-        h2 { text-align: center; color: #333; margin-bottom: 1.5rem; }
-        .form-group { margin-bottom: 1.2rem; }
-        label { display: block; margin-bottom: 0.5rem; color: #666; font-size: 0.9rem; }
+        .brand-mark {
+            width: 56px; height: 56px; margin: 0 auto 1rem;
+            border-radius: 16px; display: grid; place-items: center;
+            background: linear-gradient(135deg, #0056b3, #0a74da);
+            color: white; font-size: 1.6rem; font-weight: 800;
+            box-shadow: 0 6px 14px rgba(0, 86, 179, 0.3);
+        }
+        h2 { text-align: center; color: #1f2933; margin: 0 0 .3rem; }
+        .subtitle { text-align: center; color: #5b6770; font-size: 0.9rem; margin: 0 0 1.8rem; }
+        .form-group { margin-bottom: 1.1rem; }
+        label { display: block; margin-bottom: 0.4rem; color: #3e4c59; font-size: 0.88rem; font-weight: 600; }
         input {
-            width: 100%; padding: 0.8rem; border: 1px solid #ccc; 
-            border-radius: 5px; box-sizing: border-box; font-size: 1rem;
+            width: 100%; padding: 0.75rem 0.9rem; border: 1px solid #cbd5df;
+            border-radius: 8px; font-size: 1rem; font-family: inherit;
         }
+        input:focus { outline: none; border-color: #0056b3; box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.15); }
         button {
-            width: 100%; padding: 0.8rem; background-color: #0056b3; 
-            color: white; border: none; border-radius: 5px; 
-            font-size: 1rem; cursor: pointer; transition: background 0.3s;
+            width: 100%; padding: 0.85rem; margin-top: .4rem; background-color: #0056b3;
+            color: white; border: none; border-radius: 8px;
+            font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.3s, transform .1s;
         }
         button:hover { background-color: #004494; }
+        button:active { transform: translateY(1px); }
         #error-message {
-            color: #dc3545; text-align: center; margin-top: 1rem; 
-            font-size: 0.9rem; display: none;
+            color: #8a1c1c; background: #fdecea; border-radius: 8px; padding: .65rem .9rem;
+            text-align: center; margin-top: 1rem; font-size: 0.9rem; display: none;
         }
     </style>
 </head>
 <body>
     <div class="login-container">
+        <div class="brand-mark">K</div>
         <h2>Kit Emprendedores</h2>
+        <p class="subtitle">Sign in to your workspace</p>
         <form id="loginForm">
             <div class="form-group">
                 <label for="tenant_id">Workspace ID (Tenant)</label>

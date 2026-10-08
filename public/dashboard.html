@@ -5,153 +5,236 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kit Emprendedores - Dashboard</title>
     <style>
-        :root { color-scheme: light; font-family: Segoe UI, Tahoma, sans-serif; }
+        :root {
+            color-scheme: light;
+            --blue: #0056b3;
+            --blue-dark: #004494;
+            --blue-soft: #e7f0fa;
+            --bg: #f4f7f6;
+            --card: #ffffff;
+            --text: #1f2933;
+            --muted: #5b6770;
+            --border: #e3e8ee;
+            --danger: #dc3545;
+            --ok: #176b3a;
+            --radius: 12px;
+            --shadow: 0 2px 12px rgba(16, 42, 67, .06);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
         * { box-sizing: border-box; }
-        body { margin: 0; background: #f4f7f6; color: #1f2933; }
-        header { background: #0056b3; color: #fff; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
-        header h1 { font-size: 1.3rem; margin: 0; }
-        button { border: 0; border-radius: 4px; cursor: pointer; padding: .65rem 1rem; font-weight: 600; }
-        .logout-btn, .danger { background: #dc3545; color: #fff; }
-        .primary { background: #0056b3; color: #fff; }
-        .secondary { background: #e5e7eb; color: #1f2933; }
-        main { max-width: 1100px; margin: 0 auto; padding: 2rem; }
-        .layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
-        .panel { background: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,.05); margin-bottom: 1.5rem; }
-        h2 { margin-top: 0; font-size: 1.2rem; }
-        .meta { color: #5b6770; margin: .25rem 0; }
-        .menu { display: flex; gap: .5rem; flex-wrap: wrap; margin: 1rem 0 1.5rem; }
-        .menu-item { background: #e7f0fa; color: #0056b3; padding: .5rem .75rem; border-radius: 4px; }
-        label { display: block; margin: .8rem 0 .3rem; font-weight: 600; }
-        input, select { width: 100%; padding: .7rem; border: 1px solid #c8d0d8; border-radius: 4px; font-size: 1rem; }
-        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-        th, td { text-align: left; padding: .7rem; border-bottom: 1px solid #e5e7eb; }
+        body { margin: 0; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+        /* ---------- Barra superior ---------- */
+        .topbar {
+            background: linear-gradient(135deg, var(--blue), #0a74da);
+            color: #fff; padding: .85rem 2rem;
+            display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+            box-shadow: 0 2px 10px rgba(0, 86, 179, .25);
+            position: sticky; top: 0; z-index: 10;
+        }
+        .brand { display: flex; align-items: center; gap: .7rem; font-size: 1.2rem; font-weight: 700; letter-spacing: .2px; }
+        .brand-mark { width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,.2); display: grid; place-items: center; font-weight: 800; }
+        .topbar-right { display: flex; align-items: center; gap: 1rem; }
+        .user-chip { display: flex; align-items: center; gap: .6rem; }
+        .avatar { width: 36px; height: 36px; border-radius: 50%; background: #fff; color: var(--blue); display: grid; place-items: center; font-weight: 700; }
+        .user-info { display: flex; flex-direction: column; line-height: 1.2; }
+        .user-info small { opacity: .85; }
+
+        /* ---------- Layout ---------- */
+        .layout { display: grid; grid-template-columns: 250px 1fr; gap: 1.5rem; max-width: 1280px; margin: 0 auto; padding: 1.5rem 2rem 3rem; align-items: start; }
+        .sidebar { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.1rem; position: sticky; top: 84px; }
+        .sidebar-title { margin: 0 0 .6rem; font-size: .72rem; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+        .content { min-width: 0; }
+
+        /* ---------- Botones ---------- */
+        button { border: 0; border-radius: 8px; cursor: pointer; padding: .6rem 1.05rem; font-weight: 600; font-size: .92rem; font-family: inherit; transition: background .2s, transform .1s, box-shadow .2s; }
+        button:active { transform: translateY(1px); }
+        button:disabled { opacity: .6; cursor: not-allowed; }
+        .primary { background: var(--blue); color: #fff; }
+        .primary:hover { background: var(--blue-dark); }
+        .secondary { background: #eef2f6; color: var(--text); }
+        .secondary:hover { background: #e1e8ef; }
+        .danger { background: #fdecea; color: var(--danger); }
+        .danger:hover { background: var(--danger); color: #fff; }
+        .logout-btn { background: rgba(255,255,255,.16); color: #fff; }
+        .logout-btn:hover { background: rgba(255,255,255,.28); }
+
+        /* ---------- Paneles ---------- */
+        .panel { background: var(--card); padding: 1.6rem; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 1.5rem; }
+        .panel-head { margin-bottom: 1.2rem; }
+        .panel-head h2 { margin: 0; font-size: 1.35rem; }
+        .meta { color: var(--muted); margin: .3rem 0 0; font-size: .92rem; }
+
+        /* ---------- Formularios ---------- */
+        form { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 1.1rem; margin-bottom: 1.2rem; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1rem; }
+        label { display: block; margin: 0 0 .35rem; font-weight: 600; font-size: .88rem; color: #3e4c59; }
+        input, select { width: 100%; padding: .65rem .8rem; border: 1px solid #cbd5df; border-radius: 8px; font-size: .95rem; font-family: inherit; background: #fff; }
+        input:focus, select:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0, 86, 179, .15); }
+        input[type="checkbox"] { width: auto; accent-color: var(--blue); }
+        .inline-check { display: flex; align-items: center; gap: .5rem; font-weight: 500; margin: 0; }
+        .form-actions { display: flex; gap: .6rem; margin-top: 1rem; }
+        .toolbar { max-width: 360px; }
+
+        /* ---------- Tablas ---------- */
+        .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f1f5f9; color: #52606d; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; }
+        th, td { text-align: left; padding: .8rem 1rem; border-bottom: 1px solid var(--border); }
+        tbody tr:last-child td { border-bottom: 0; }
+        tbody tr:hover { background: #f8fbff; }
+        td.empty { text-align: center; color: var(--muted); padding: 1.6rem; }
         .actions { display: flex; gap: .4rem; flex-wrap: wrap; }
-        .message { min-height: 1.4rem; margin-top: .8rem; color: #8a1c1c; }
-        .success { color: #176b3a; }
+        td.actions { display: table-cell; white-space: nowrap; }
+        td.actions button { margin-right: .35rem; }
+        .pill { display: inline-block; padding: .15rem .65rem; border-radius: 999px; font-size: .78rem; font-weight: 600; }
+        .pill.ok { background: #e3f6ea; color: var(--ok); }
+        .pill.off { background: #eceff1; color: #697586; }
+
+        /* ---------- Mensajes ---------- */
+        .message { margin: 0 0 1rem; padding: .7rem 1rem; border-radius: 8px; background: #fdecea; color: #8a1c1c; font-size: .92rem; }
+        .message:empty { display: none; }
+        .message.success { background: #e3f6ea; color: var(--ok); }
         .hidden { display: none !important; }
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; }
-        .modal-overlay.active { display: flex; justify-content: center; align-items: center; }
-        .modal { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); max-width: 500px; width: 90%; }
-        .modal h3 { margin-top: 0; color: #333; }
-        .modal-actions { display: flex; gap: 0.5rem; margin-top: 1.5rem; justify-content: flex-end; }
-        .modal-actions button { flex: 0 1 auto; }
-        .modal-close { background: #e5e7eb; }
-        @media (max-width: 600px) { main { padding: 1rem; } header { padding: 1rem; } th, td { font-size: .9rem; } }
+
+        /* ---------- Menu lateral y arboles ---------- */
+        .tree, .tree ul { list-style: none; margin: 0; padding-left: 0; }
+        .tree ul { padding-left: .9rem; margin-left: .35rem; border-left: 2px solid var(--border); }
+        .tree summary { cursor: pointer; font-weight: 700; padding: .5rem .3rem; color: #3e4c59; border-radius: 6px; }
+        .tree summary:hover { background: #f1f5f9; }
+        button.menu-item { display: flex; align-items: center; gap: .6rem; width: 100%; text-align: left; background: transparent; color: #3e4c59; padding: .6rem .8rem; margin: .1rem 0; border-radius: 8px; }
+        button.menu-item:hover { background: var(--blue-soft); color: var(--blue); }
+        button.menu-item.active { background: var(--blue-soft); color: var(--blue); box-shadow: inset 3px 0 0 var(--blue); }
+
+        /* ---------- Permisos ---------- */
+        .tree li.node-row { display: flex; justify-content: space-between; align-items: center; gap: .8rem; flex-wrap: wrap; background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: .65rem .9rem; margin: .45rem 0; }
+        .node-row small { color: var(--muted); margin-left: .5rem; }
+        .checks { display: flex; gap: .6rem; flex-wrap: wrap; }
+        .checks .inline-check { background: #fff; border: 1px solid var(--border); border-radius: 999px; padding: .25rem .75rem; font-size: .85rem; }
+        .badge { background: #e3f6ea; color: var(--ok); border-radius: 999px; padding: .1rem .55rem; font-size: .72rem; font-weight: 700; margin-left: .5rem; }
+
+        @media (max-width: 860px) {
+            .layout { grid-template-columns: 1fr; padding: 1rem; }
+            .sidebar { position: static; }
+            .topbar { padding: .8rem 1rem; }
+            .user-info { display: none; }
+        }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Kit Emprendedores</h1>
-        <button class="logout-btn" id="logout-button">Log out</button>
+    <header class="topbar">
+        <div class="brand"><span class="brand-mark">K</span> Kit Emprendedores</div>
+        <div class="topbar-right">
+            <div class="user-chip">
+                <span class="avatar" id="user-avatar">U</span>
+                <span class="user-info"><strong id="user-name">User</strong><small id="profile-display">Loading...</small></span>
+            </div>
+            <button class="logout-btn" id="logout-button">Log out</button>
+        </div>
     </header>
-    <main>
-        <h2 id="dashboard-title"></h2>
-        <section class="panel">
-            <h2>Workspace</h2>
-            <p class="meta">Tenant: <strong id="tenant-display">Authenticated</strong></p>
-            <p class="meta">Profile: <strong id="profile-display">Loading...</strong></p>
-            <nav class="menu" id="menu" aria-label="Authorized modules"></nav>
-        </section>
-        <section class="panel" id="catalog-container">
-            <h2>Catalog</h2>
-            <button class="primary" id="add-product-btn" style="margin-bottom: 1rem;">+ Add Product</button>
-            <table>
-                <thead><tr><th>Product</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead>
-                <tbody id="catalog-body"></tbody>
-            </table>
-            <p class="message" id="catalog-message"></p>
-        </section>
 
-        <!-- Product Modal -->
-        <div id="product-modal-overlay" class="modal-overlay">
-            <div class="modal">
-                <h3 id="product-modal-title">Add Product</h3>
-                <form id="product-modal-form">
-                    <label for="modal-product-name">Product Name</label>
-                    <input id="modal-product-name" name="nombre" maxlength="100" required>
-                    <label for="modal-product-price">Price</label>
-                    <input id="modal-product-price" name="precio" type="number" step="0.01" min="0" required>
-                    <label for="modal-product-stock">Stock</label>
-                    <input id="modal-product-stock" name="stock" type="number" min="0" required>
-                    <div class="modal-actions">
-                        <button type="button" class="modal-close" id="product-modal-cancel">Cancel</button>
-                        <button type="submit" class="primary">Save</button>
+    <div class="layout">
+        <aside class="sidebar">
+            <p class="sidebar-title">Menu</p>
+            <nav id="menu" aria-label="Authorized modules"></nav>
+        </aside>
+
+        <main class="content">
+            <p class="message" id="workspace-message"></p>
+
+            <!-- CATALOG -->
+            <section class="panel hidden" id="catalog-container">
+                <div class="panel-head"><h2>Catalog</h2><p class="meta">Products available in your store.</p></div>
+                <form id="product-form">
+                    <div class="form-grid">
+                        <div><label for="product-nombre">Product</label><input id="product-nombre" maxlength="100" required></div>
+                        <div><label for="product-precio">Price</label><input id="product-precio" type="number" min="0" step="0.01" required></div>
+                        <div><label for="product-stock">Stock</label><input id="product-stock" type="number" min="0" step="1" value="0" required></div>
+                    </div>
+                    <div class="form-actions">
+                        <button class="primary" type="submit" id="product-submit">Add product</button>
+                        <button class="secondary hidden" type="button" id="product-cancel">Cancel</button>
                     </div>
                 </form>
-            </div>
-        </div>
-
-        <!-- User Edit Modal -->
-        <div id="user-modal-overlay" class="modal-overlay">
-            <div class="modal">
-                <h3>Edit User Role</h3>
-                <form id="user-modal-form">
-                    <label for="modal-user-profile">Profile</label>
-                    <select id="modal-user-profile" name="profile_id" required>
-                        <option value="1">Admin</option>
-                        <option value="2">Cashier</option>
-                    </select>
-                    <label for="modal-user-status">Status</label>
-                    <select id="modal-user-status" name="is_active" required>
-                        <option value="true">Active</option>
-                        <option value="false">Inactive</option>
-                    </select>
-                    <div class="modal-actions">
-                        <button type="button" class="modal-close" id="user-modal-cancel">Cancel</button>
-                        <button type="submit" class="primary">Save</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Global Delete Confirmation Modal -->
-        <div id="delete-modal-overlay" class="modal-overlay">
-            <div class="modal">
-                <h3>Confirm Deletion</h3>
-                <p>Are you sure you want to delete this item? This action cannot be undone.</p>
-                <div class="modal-actions">
-                    <button type="button" class="modal-close" id="delete-modal-cancel">Cancel</button>
-                    <button type="button" class="danger" id="delete-modal-confirm">Delete</button>
+                <p class="message" id="catalog-message"></p>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Product</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead>
+                        <tbody id="catalog-body"></tbody>
+                    </table>
                 </div>
-            </div>
-        </div>
+            </section>
 
-        <section class="panel hidden" id="users-container">
-            <h2>User management</h2>
-            <form id="create-user-form">
-                <label for="username">Username</label>
-                <input id="username" name="username" maxlength="50" required>
-                <label for="password">Password</label>
-                <input id="password" name="password" type="password" minlength="4" required>
-                <label for="profile_id">Profile</label>
-                <select id="profile_id" name="profile_id" required>
-                    <option value="1">Admin</option>
-                    <option value="2">Cashier</option>
-                </select>
-                <button class="primary" type="submit" style="margin-top:0.8rem;">Create user</button>
-            </form>
-            <p class="message" id="user-message"></p>
-            <table>
-                <thead><tr><th>Username</th><th>Profile</th><th>Status</th><th>Actions</th></tr></thead>
-                <tbody id="users-body"></tbody>
-            </table>
-        </section>
-    </main>
+            <!-- USERS -->
+            <section class="panel hidden" id="users-container">
+                <div class="panel-head"><h2>User management</h2><p class="meta">Create users and choose the profile that defines what they can do.</p></div>
+                <form id="create-user-form">
+                    <div class="form-grid">
+                        <div><label for="username">Username</label><input id="username" name="username" maxlength="50" required></div>
+                        <div><label for="password">Password <span id="password-hint" class="meta"></span></label><input id="password" name="password" type="password" minlength="4" required></div>
+                        <div><label for="profile_id">Profile</label><select id="profile_id" name="profile_id" required></select></div>
+                    </div>
+                    <label class="inline-check hidden" id="user-active-row" style="margin-top:1rem"><input type="checkbox" id="user-active" checked> Active</label>
+                    <div class="form-actions">
+                        <button class="primary" type="submit" id="user-submit">Create user</button>
+                        <button class="secondary hidden" type="button" id="user-cancel">Cancel</button>
+                    </div>
+                </form>
+                <p class="message" id="user-message"></p>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Username</th><th>Profile</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody id="users-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- PERFILES -->
+            <section class="panel hidden" id="perfiles-container">
+                <div class="panel-head"><h2>Profiles (roles)</h2><p class="meta">Each profile groups the permissions that its users will have.</p></div>
+                <form id="perfil-form">
+                    <div class="form-grid">
+                        <div><label for="perfil-nombre">Name</label><input id="perfil-nombre" maxlength="50" required></div>
+                        <div><label for="perfil-descripcion">Description</label><input id="perfil-descripcion" maxlength="200"></div>
+                    </div>
+                    <div class="form-actions">
+                        <button class="primary" type="submit" id="perfil-submit">Create profile</button>
+                        <button class="secondary hidden" type="button" id="perfil-cancel">Cancel</button>
+                    </div>
+                </form>
+                <p class="message" id="perfil-message"></p>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Name</th><th>Description</th><th>Actions</th></tr></thead>
+                        <tbody id="perfiles-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- PERMISOS -->
+            <section class="panel hidden" id="permisos-container">
+                <div class="panel-head">
+                    <h2>Permissions</h2>
+                    <p class="meta">A screen without an assignment is not accessible to the profile. Containers appear automatically when they have an accessible child.</p>
+                </div>
+                <div class="toolbar">
+                    <label for="permiso-perfil">Profile</label>
+                    <select id="permiso-perfil"></select>
+                </div>
+                <p class="message" id="permiso-message" style="margin-top:1rem"></p>
+                <nav aria-label="Permissions by node" id="permisos-tree"></nav>
+            </section>
+        </main>
+    </div>
 
     <script>
         const token = localStorage.getItem('token');
         const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-        const usersContainer = document.getElementById('users-container');
-        const userMessage = document.getElementById('user-message');
-        const catalogMessage = document.getElementById('catalog-message');
-        
-        let currentMenu = null;
-        let currentProductId = null;
-        let currentUserId = null;
-        let currentUsername = null;
-        let deleteActionCallback = null;
+        const byId = (id) => document.getElementById(id);
 
-        if (!token) window.location.href = 'index.html';
+        if (!token) {
+            window.location.href = 'index.html';
+        }
 
         async function apiRequest(path, options = {}) {
             const response = await fetch(`/api${path}`, {
@@ -174,232 +257,434 @@
         }
 
         function escapeHtml(value) {
-            return String(value).replace(/[&<>'"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[c]));
+            return String(value ?? '').replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
+        }
+
+        const emptyRow = (columns, text) => `<tr><td class="empty" colspan="${columns}">${text}</td></tr>`;
+
+        // access: ruta -> acciones permitidas al perfil (viene de /menu)
+        let access = {};
+        const can = (ruta, action) => Boolean(access[ruta] && access[ruta][action]);
+
+        function groupByParent(items) {
+            const groups = new Map();
+            items.forEach((item) => {
+                const key = item.padre_id ?? 0;
+                if (!groups.has(key)) groups.set(key, []);
+                groups.get(key).push(item);
+            });
+            return groups;
+        }
+
+        // ==========================================
+        // MENU Y NAVEGACION
+        // ==========================================
+        const SCREENS = {
+            '/catalog':  { el: 'catalog-container',  icon: '🛍️', load: () => loadCatalog() },
+            '/users':    { el: 'users-container',    icon: '👤', load: () => loadUsers() },
+            '/perfiles': { el: 'perfiles-container', icon: '🪪', load: () => loadPerfiles() },
+            '/permisos': { el: 'permisos-container', icon: '🔐', load: () => loadPermisos() },
+        };
+
+        function renderMenu(items) {
+            access = {};
+            items.forEach((item) => {
+                if (item.ruta) access[item.ruta] = { create: item.can_create, update: item.can_update, delete: item.can_delete };
+            });
+            const groups = groupByParent(items);
+            const build = (parentId) => `<ul class="tree">${(groups.get(parentId) || []).map((item) => item.es_nodo
+                ? `<li><details open><summary>${escapeHtml(item.nombre)}</summary>${build(item.modulo_id)}</details></li>`
+                : `<li><button class="menu-item" data-ruta="${escapeHtml(item.ruta)}"><span>${SCREENS[item.ruta]?.icon || '📄'}</span>${escapeHtml(item.nombre)}</button></li>`
+            ).join('')}</ul>`;
+            byId('menu').innerHTML = build(0);
+        }
+
+        async function showScreen(ruta) {
+            const workspaceMessage = byId('workspace-message');
+            Object.values(SCREENS).forEach((screen) => byId(screen.el).classList.add('hidden'));
+            document.querySelectorAll('button.menu-item').forEach((button) => button.classList.toggle('active', button.dataset.ruta === ruta));
+            const screen = SCREENS[ruta];
+            if (!screen) {
+                showMessage(workspaceMessage, 'This module does not have a screen yet.');
+                return;
+            }
+            showMessage(workspaceMessage, '');
+            byId(screen.el).classList.remove('hidden');
+            await screen.load();
+        }
+
+        byId('menu').addEventListener('click', (event) => {
+            const button = event.target.closest('button.menu-item');
+            if (button) showScreen(button.dataset.ruta);
+        });
+
+        // ==========================================
+        // CATALOG
+        // ==========================================
+        const catalogMessage = byId('catalog-message');
+        const productForm = byId('product-form');
+        let editingProductId = null;
+
+        function resetProductForm() {
+            editingProductId = null;
+            productForm.reset();
+            byId('product-cancel').classList.add('hidden');
+            byId('product-submit').textContent = 'Add product';
+            productForm.classList.toggle('hidden', !can('/catalog', 'create'));
         }
 
         async function loadCatalog() {
+            resetProductForm();
             try {
                 const products = await apiRequest('/catalog');
-                document.getElementById('catalog-body').innerHTML = products.map((product) => `
+                byId('catalog-body').innerHTML = products.length ? products.map((product) => `
                     <tr>
                         <td>${escapeHtml(product.nombre)}</td>
                         <td>${Number(product.precio).toFixed(2)}</td>
                         <td>${product.stock}</td>
                         <td class="actions">
-                            <button class="secondary edit-product-btn" data-id="${product.producto_id}" data-nombre="${escapeHtml(product.nombre)}" data-precio="${product.precio}" data-stock="${product.stock}">Edit</button>
-                            <button class="danger delete-btn" data-id="${product.producto_id}">Delete</button>
+                            ${can('/catalog', 'update') ? `<button class="secondary" data-action="edit" data-id="${product.producto_id}" data-nombre="${escapeHtml(product.nombre)}" data-precio="${product.precio}" data-stock="${product.stock}">Edit</button>` : ''}
+                            ${can('/catalog', 'delete') ? `<button class="danger" data-action="delete" data-id="${product.producto_id}">Delete</button>` : ''}
                         </td>
                     </tr>
-                `).join('');
+                `).join('') : emptyRow(4, 'No products yet.');
+            } catch (error) {
+                showMessage(catalogMessage, error.message);
+            }
+        }
 
-                if (currentMenu) {
-                    const catalogModule = currentMenu.find((m) => m.nombre.toLowerCase() === 'catalogo');
-                    if (catalogModule) {
-                        if (!catalogModule.can_delete) document.querySelectorAll('.delete-btn').forEach(btn => btn.style.display = 'none');
-                        if (!catalogModule.can_update) document.querySelectorAll('.edit-product-btn').forEach(btn => btn.style.display = 'none');
-                    }
+        productForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const body = JSON.stringify({
+                nombre: byId('product-nombre').value,
+                precio: byId('product-precio').value,
+                stock: byId('product-stock').value,
+            });
+            try {
+                if (editingProductId) {
+                    await apiRequest(`/catalog/${editingProductId}`, { method: 'PUT', body });
+                    await loadCatalog();
+                    showMessage(catalogMessage, 'Product updated.', true);
+                } else {
+                    await apiRequest('/catalog', { method: 'POST', body });
+                    await loadCatalog();
+                    showMessage(catalogMessage, 'Product added.', true);
                 }
             } catch (error) {
                 showMessage(catalogMessage, error.message);
             }
+        });
+
+        byId('product-cancel').addEventListener('click', resetProductForm);
+
+        byId('catalog-body').addEventListener('click', async (event) => {
+            const button = event.target.closest('button');
+            if (!button) return;
+            try {
+                if (button.dataset.action === 'delete') {
+                    if (!window.confirm('Delete this product?')) return;
+                    await apiRequest(`/catalog/${button.dataset.id}`, { method: 'DELETE' });
+                    await loadCatalog();
+                    showMessage(catalogMessage, 'Product deleted.', true);
+                } else {
+                    editingProductId = button.dataset.id;
+                    productForm.classList.remove('hidden');
+                    byId('product-nombre').value = button.dataset.nombre;
+                    byId('product-precio').value = button.dataset.precio;
+                    byId('product-stock').value = button.dataset.stock;
+                    byId('product-cancel').classList.remove('hidden');
+                    byId('product-submit').textContent = 'Save changes';
+                    showMessage(catalogMessage, '');
+                    productForm.scrollIntoView({ behavior: 'smooth' });
+                }
+            } catch (error) {
+                showMessage(catalogMessage, error.message);
+            }
+        });
+
+        // ==========================================
+        // USERS
+        // ==========================================
+        const userMessage = byId('user-message');
+        const userForm = byId('create-user-form');
+        let editingUserId = null;
+
+        function resetUserForm() {
+            editingUserId = null;
+            userForm.reset();
+            byId('password').required = true;
+            byId('password-hint').textContent = '';
+            byId('user-active-row').classList.add('hidden');
+            byId('user-cancel').classList.add('hidden');
+            byId('user-submit').textContent = 'Create user';
+            userForm.classList.toggle('hidden', !can('/users', 'create'));
         }
 
         async function loadUsers() {
+            resetUserForm();
             try {
+                const perfiles = await apiRequest('/perfiles');
+                byId('profile_id').innerHTML = perfiles.map((p) => `<option value="${p.perfil_id}">${escapeHtml(p.nombre)}</option>`).join('');
                 const users = await apiRequest('/users');
-                document.getElementById('users-body').innerHTML = users.map((user) => `
+                byId('users-body').innerHTML = users.length ? users.map((user) => `
                     <tr>
                         <td>${escapeHtml(user.username)}</td>
                         <td>${escapeHtml(user.perfil)}</td>
-                        <td>${user.is_active ? 'Active' : 'Inactive'}</td>
+                        <td><span class="pill ${user.is_active ? 'ok' : 'off'}">${user.is_active ? 'Active' : 'Inactive'}</span></td>
                         <td class="actions">
-                            <button class="secondary edit-user-btn" data-id="${user.usuario_id}" data-username="${escapeHtml(user.username)}" data-profile="${user.perfil_id}" data-active="${user.is_active}">Edit</button>
-                            <button class="danger delete-user-btn" data-id="${user.usuario_id}">Delete</button>
+                            ${can('/users', 'update') ? `<button class="secondary" data-action="edit" data-id="${user.usuario_id}" data-username="${escapeHtml(user.username)}" data-profile="${user.perfil_id}" data-active="${user.is_active}">Edit</button>` : ''}
+                            ${can('/users', 'delete') ? `<button class="danger" data-action="delete" data-id="${user.usuario_id}">Delete</button>` : ''}
                         </td>
                     </tr>
-                `).join('');
+                `).join('') : emptyRow(4, 'No users yet.');
             } catch (error) {
                 showMessage(userMessage, error.message);
             }
         }
 
-        // Modal Controllers
-        function openProductModal(product = null) {
-            currentProductId = product ? product.producto_id : null;
-            const form = document.getElementById('product-modal-form');
-            if (product) {
-                document.getElementById('product-modal-title').textContent = 'Edit Product';
-                document.getElementById('modal-product-name').value = product.nombre;
-                document.getElementById('modal-product-price').value = product.precio;
-                document.getElementById('modal-product-stock').value = product.stock;
-            } else {
-                document.getElementById('product-modal-title').textContent = 'Add Product';
-                form.reset();
-            }
-            document.getElementById('product-modal-overlay').classList.add('active');
-        }
-
-        function closeProductModal() {
-            document.getElementById('product-modal-overlay').classList.remove('active');
-            currentProductId = null;
-        }
-
-        function openUserModal(user) {
-            currentUserId = user.usuario_id;
-            currentUsername = user.username;
-            document.getElementById('modal-user-profile').value = user.perfil_id;
-            document.getElementById('modal-user-status').value = user.is_active.toString();
-            document.getElementById('user-modal-overlay').classList.add('active');
-        }
-
-        function closeUserModal() {
-            document.getElementById('user-modal-overlay').classList.remove('active');
-            currentUserId = null;
-            currentUsername = null;
-        }
-
-        function openDeleteModal(callback) {
-            deleteActionCallback = callback;
-            document.getElementById('delete-modal-overlay').classList.add('active');
-        }
-
-        function closeDeleteModal() {
-            document.getElementById('delete-modal-overlay').classList.remove('active');
-            deleteActionCallback = null;
-        }
-
-        // Initialization
-        async function initialize() {
-            try {
-                document.getElementById('dashboard-title').textContent = `Welcome, ${storedUser.username} | ${storedUser.tenantNombre} (Tenant ID: ${storedUser.tenantId})`;
-                currentMenu = await apiRequest('/menu');
-                document.getElementById('menu').innerHTML = currentMenu.map((m) => `<span class="menu-item">${escapeHtml(m.nombre)}</span>`).join('');
-                
-                const userModule = currentMenu.find((m) => m.nombre.toLowerCase() === 'usuarios');
-                const catalogModule = currentMenu.find((m) => m.nombre.toLowerCase() === 'catalogo');
-                
-                usersContainer.classList.toggle('hidden', !userModule);
-                document.getElementById('catalog-container').classList.toggle('hidden', !catalogModule);
-                document.getElementById('profile-display').textContent = storedUser.perfilId === 1 ? 'Admin' : 'Cashier';
-
-                if (catalogModule) {
-                    if (!catalogModule.can_create) document.getElementById('add-product-btn').style.display = 'none';
-                    await loadCatalog();
-                }
-                if (userModule) await loadUsers();
-            } catch (error) {
-                showMessage(userMessage, error.message);
-            }
-        }
-
-        // Event Listeners
-        document.getElementById('add-product-btn').addEventListener('click', () => openProductModal());
-        document.getElementById('product-modal-cancel').addEventListener('click', closeProductModal);
-        document.getElementById('user-modal-cancel').addEventListener('click', closeUserModal);
-        document.getElementById('delete-modal-cancel').addEventListener('click', closeDeleteModal);
-
-        document.getElementById('product-modal-form').addEventListener('submit', async (event) => {
+        userForm.addEventListener('submit', async (event) => {
             event.preventDefault();
-            const form = new FormData(event.target);
+            const form = new FormData(userForm);
+            const body = { username: form.get('username'), perfil_id: Number(form.get('profile_id')) };
             try {
-                const data = { nombre: form.get('nombre'), precio: Number(form.get('precio')), stock: Number(form.get('stock')) };
-                if (currentProductId) {
-                    await apiRequest(`/products/${currentProductId}`, { method: 'PUT', body: JSON.stringify(data) });
-                    showMessage(catalogMessage, 'Product updated.', true);
+                if (editingUserId) {
+                    body.is_active = byId('user-active').checked;
+                    if (form.get('password')) body.password = form.get('password');
+                    await apiRequest(`/users/${editingUserId}`, { method: 'PUT', body: JSON.stringify(body) });
+                    await loadUsers();
+                    showMessage(userMessage, 'User updated.', true);
                 } else {
-                    await apiRequest('/products', { method: 'POST', body: JSON.stringify(data) });
-                    showMessage(catalogMessage, 'Product created.', true);
+                    body.password = form.get('password');
+                    await apiRequest('/users', { method: 'POST', body: JSON.stringify(body) });
+                    await loadUsers();
+                    showMessage(userMessage, 'User created.', true);
                 }
-                closeProductModal();
-                await loadCatalog();
-            } catch (error) {
-                showMessage(catalogMessage, error.message);
-            }
-        });
-
-        document.getElementById('catalog-body').addEventListener('click', (event) => {
-            if (event.target.classList.contains('delete-btn')) {
-                const productId = event.target.dataset.id;
-                openDeleteModal(async () => {
-                    try {
-                        await apiRequest(`/products/${productId}`, { method: 'DELETE' });
-                        showMessage(catalogMessage, 'Product deleted.', true);
-                        await loadCatalog();
-                    } catch (error) {
-                        showMessage(catalogMessage, error.message);
-                    }
-                });
-            } else if (event.target.classList.contains('edit-product-btn')) {
-                openProductModal({
-                    producto_id: Number(event.target.dataset.id),
-                    nombre: event.target.dataset.nombre,
-                    precio: Number(event.target.dataset.precio),
-                    stock: Number(event.target.dataset.stock)
-                });
-            }
-        });
-
-        document.getElementById('create-user-form').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const form = new FormData(event.target);
-            try {
-                await apiRequest('/users', { method: 'POST', body: JSON.stringify({ username: form.get('username'), password: form.get('password'), perfil_id: Number(form.get('profile_id')) }) });
-                event.target.reset();
-                showMessage(userMessage, 'User created.', true);
-                await loadUsers();
             } catch (error) {
                 showMessage(userMessage, error.message);
             }
         });
 
-        document.getElementById('user-modal-form').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const form = new FormData(event.target);
+        byId('user-cancel').addEventListener('click', resetUserForm);
+
+        byId('users-body').addEventListener('click', async (event) => {
+            const button = event.target.closest('button');
+            if (!button) return;
             try {
-                await apiRequest(`/users/${currentUserId}`, {
-                    method: 'PUT',
-                    body: JSON.stringify({ 
-                        username: currentUsername,
-                        perfil_id: Number(form.get('profile_id')),
-                        is_active: form.get('is_active') === 'true'
-                    })
-                });
-                showMessage(userMessage, 'User updated.', true);
-                closeUserModal();
-                await loadUsers();
+                if (button.dataset.action === 'delete') {
+                    if (!window.confirm('Delete this user?')) return;
+                    await apiRequest(`/users/${button.dataset.id}`, { method: 'DELETE' });
+                    await loadUsers();
+                    showMessage(userMessage, 'User deleted.', true);
+                } else {
+                    editingUserId = button.dataset.id;
+                    userForm.classList.remove('hidden');
+                    byId('username').value = button.dataset.username;
+                    byId('profile_id').value = button.dataset.profile;
+                    byId('password').required = false;
+                    byId('password').value = '';
+                    byId('password-hint').textContent = '(leave empty to keep the current one)';
+                    byId('user-active').checked = button.dataset.active === 'true';
+                    byId('user-active-row').classList.remove('hidden');
+                    byId('user-cancel').classList.remove('hidden');
+                    byId('user-submit').textContent = 'Save changes';
+                    showMessage(userMessage, '');
+                    userForm.scrollIntoView({ behavior: 'smooth' });
+                }
             } catch (error) {
                 showMessage(userMessage, error.message);
             }
         });
 
-        document.getElementById('users-body').addEventListener('click', (event) => {
-            if (event.target.classList.contains('delete-user-btn')) {
-                const userId = event.target.dataset.id;
-                openDeleteModal(async () => {
-                    try {
-                        await apiRequest(`/users/${userId}`, { method: 'DELETE' });
-                        showMessage(userMessage, 'User deleted.', true);
-                        await loadUsers();
-                    } catch (error) {
-                        showMessage(userMessage, error.message);
-                    }
-                });
-            } else if (event.target.classList.contains('edit-user-btn')) {
-                openUserModal({
-                    usuario_id: Number(event.target.dataset.id),
-                    username: event.target.dataset.username,
-                    perfil_id: Number(event.target.dataset.profile),
-                    is_active: event.target.dataset.active === 'true'
-                });
+        // ==========================================
+        // PERFILES (roles)
+        // ==========================================
+        const perfilMessage = byId('perfil-message');
+        const perfilForm = byId('perfil-form');
+        let editingPerfilId = null;
+
+        function resetPerfilForm() {
+            editingPerfilId = null;
+            perfilForm.reset();
+            byId('perfil-cancel').classList.add('hidden');
+            byId('perfil-submit').textContent = 'Create profile';
+            perfilForm.classList.toggle('hidden', !can('/perfiles', 'create'));
+        }
+
+        async function loadPerfiles() {
+            resetPerfilForm();
+            try {
+                const perfiles = await apiRequest('/perfiles');
+                byId('perfiles-body').innerHTML = perfiles.length ? perfiles.map((perfil) => `
+                    <tr>
+                        <td>${escapeHtml(perfil.nombre)}</td>
+                        <td>${escapeHtml(perfil.descripcion)}</td>
+                        <td class="actions">
+                            ${can('/perfiles', 'update') ? `<button class="secondary" data-action="edit" data-id="${perfil.perfil_id}" data-nombre="${escapeHtml(perfil.nombre)}" data-descripcion="${escapeHtml(perfil.descripcion)}">Edit</button>` : ''}
+                            ${can('/perfiles', 'delete') ? `<button class="danger" data-action="delete" data-id="${perfil.perfil_id}">Delete</button>` : ''}
+                        </td>
+                    </tr>
+                `).join('') : emptyRow(3, 'No profiles yet.');
+            } catch (error) {
+                showMessage(perfilMessage, error.message);
+            }
+        }
+
+        perfilForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const body = JSON.stringify({ nombre: byId('perfil-nombre').value, descripcion: byId('perfil-descripcion').value });
+            try {
+                if (editingPerfilId) {
+                    await apiRequest(`/perfiles/${editingPerfilId}`, { method: 'PUT', body });
+                    await loadPerfiles();
+                    showMessage(perfilMessage, 'Profile updated.', true);
+                } else {
+                    await apiRequest('/perfiles', { method: 'POST', body });
+                    await loadPerfiles();
+                    showMessage(perfilMessage, 'Profile created.', true);
+                }
+            } catch (error) {
+                showMessage(perfilMessage, error.message);
             }
         });
 
-        document.getElementById('delete-modal-confirm').addEventListener('click', async () => {
-            if (deleteActionCallback) await deleteActionCallback();
-            closeDeleteModal();
+        byId('perfil-cancel').addEventListener('click', resetPerfilForm);
+
+        byId('perfiles-body').addEventListener('click', async (event) => {
+            const button = event.target.closest('button');
+            if (!button) return;
+            try {
+                if (button.dataset.action === 'delete') {
+                    if (!window.confirm('Delete this profile?')) return;
+                    await apiRequest(`/perfiles/${button.dataset.id}`, { method: 'DELETE' });
+                    await loadPerfiles();
+                    showMessage(perfilMessage, 'Profile deleted.', true);
+                } else {
+                    editingPerfilId = button.dataset.id;
+                    perfilForm.classList.remove('hidden');
+                    byId('perfil-nombre').value = button.dataset.nombre;
+                    byId('perfil-descripcion').value = button.dataset.descripcion;
+                    byId('perfil-cancel').classList.remove('hidden');
+                    byId('perfil-submit').textContent = 'Save changes';
+                    showMessage(perfilMessage, '');
+                    perfilForm.scrollIntoView({ behavior: 'smooth' });
+                }
+            } catch (error) {
+                showMessage(perfilMessage, error.message);
+            }
         });
 
-        document.getElementById('logout-button').addEventListener('click', () => {
+        // ==========================================
+        // PERMISOS (lista desplegable de nodos por perfil)
+        // ==========================================
+        const permisoMessage = byId('permiso-message');
+        let permisoData = { perfiles: [], modulos: [], permisos: [] };
+
+        async function loadPermisos() {
+            try {
+                permisoData = await apiRequest('/permisos');
+                const select = byId('permiso-perfil');
+                const previous = select.value;
+                select.innerHTML = '<option value="">Select a profile</option>' + permisoData.perfiles
+                    .map((p) => `<option value="${p.perfil_id}">${escapeHtml(p.nombre)}</option>`).join('');
+                if (permisoData.perfiles.some((p) => String(p.perfil_id) === previous)) select.value = previous;
+                renderPermisos();
+            } catch (error) {
+                showMessage(permisoMessage, error.message);
+            }
+        }
+
+        function renderPermisos() {
+            const tree = byId('permisos-tree');
+            const perfilId = Number(byId('permiso-perfil').value);
+            if (!perfilId) {
+                tree.innerHTML = '<p class="meta">Select a profile to configure its permissions.</p>';
+                return;
+            }
+
+            const assigned = new Map(permisoData.permisos
+                .filter((p) => p.perfil_id === perfilId)
+                .map((p) => [p.modulo_id, p]));
+            const canSave = can('/permisos', 'update');
+            const canRemove = can('/permisos', 'delete');
+            const groups = groupByParent(permisoData.modulos);
+
+            const checkbox = (flag, label, checked) =>
+                `<label class="inline-check"><input type="checkbox" data-flag="${flag}" ${checked ? 'checked' : ''} ${canSave ? '' : 'disabled'}> ${label}</label>`;
+
+            const build = (parentId) => `<ul class="tree">${(groups.get(parentId) || []).map((m) => {
+                if (m.es_nodo) {
+                    return `<li><details open><summary>${escapeHtml(m.nombre)}</summary>${build(m.modulo_id)}</details></li>`;
+                }
+                const current = assigned.get(m.modulo_id);
+                return `
+                    <li class="node-row" data-modulo="${m.modulo_id}">
+                        <span>${escapeHtml(m.nombre)}<small>${escapeHtml(m.ruta)}</small>${current ? '<span class="badge">assigned</span>' : ''}</span>
+                        <span class="checks">
+                            ${checkbox('can_create', 'Insert', current?.can_create)}
+                            ${checkbox('can_update', 'Update', current?.can_update)}
+                            ${checkbox('can_delete', 'Delete', current?.can_delete)}
+                        </span>
+                        <span class="actions">
+                            ${canSave ? `<button class="primary" data-action="save">${current ? 'Save' : 'Assign'}</button>` : ''}
+                            ${current && canRemove ? '<button class="danger" data-action="remove">Remove</button>' : ''}
+                        </span>
+                    </li>`;
+            }).join('')}</ul>`;
+
+            tree.innerHTML = build(0);
+        }
+
+        byId('permiso-perfil').addEventListener('change', () => {
+            showMessage(permisoMessage, '');
+            renderPermisos();
+        });
+
+        byId('permisos-tree').addEventListener('click', async (event) => {
+            const button = event.target.closest('button[data-action]');
+            if (!button) return;
+            const row = button.closest('[data-modulo]');
+            const perfilId = Number(byId('permiso-perfil').value);
+            const moduloId = Number(row.dataset.modulo);
+            button.disabled = true;
+            try {
+                if (button.dataset.action === 'remove') {
+                    await apiRequest(`/permisos/${perfilId}/${moduloId}`, { method: 'DELETE' });
+                } else {
+                    const flag = (name) => row.querySelector(`[data-flag="${name}"]`).checked;
+                    await apiRequest('/permisos', {
+                        method: 'PUT',
+                        body: JSON.stringify({ perfil_id: perfilId, modulo_id: moduloId, can_create: flag('can_create'), can_update: flag('can_update'), can_delete: flag('can_delete') })
+                    });
+                }
+                const done = button.dataset.action === 'remove' ? 'Access removed.' : 'Permissions saved.';
+                await loadPermisos();
+                showMessage(permisoMessage, done, true);
+            } catch (error) {
+                showMessage(permisoMessage, error.message);
+                button.disabled = false;
+            }
+        });
+
+        // ==========================================
+        // INIT
+        // ==========================================
+        async function initialize() {
+            const username = storedUser.username || 'User';
+            byId('user-name').textContent = username;
+            byId('user-avatar').textContent = username.charAt(0).toUpperCase();
+            byId('profile-display').textContent = storedUser.perfil || `Profile #${storedUser.perfilId ?? ''}`;
+            try {
+                const menu = await apiRequest('/menu');
+                renderMenu(menu);
+                const first = menu.find((item) => !item.es_nodo);
+                if (first) await showScreen(first.ruta);
+                else showMessage(byId('workspace-message'), 'Your profile has no accessible modules.');
+            } catch (error) {
+                showMessage(byId('workspace-message'), error.message);
+            }
+        }
+
+        byId('logout-button').addEventListener('click', () => {
             localStorage.clear();
             window.location.href = 'index.html';
         });
