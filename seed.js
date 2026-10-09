@@ -1,6 +1,9 @@
 require('dotenv').config();
-const bcrypt = require('bcrypt');
 const { pool } = require('./db');
+const { redisClient, redisReady } = require('./cliente_redis');
+
+// Futuro: reactivar bcrypt cuando el MVP deje de usar contrasenas planas.
+// const bcrypt = require('bcrypt');
 
 // Tablas con RLS forzado: durante el seed se desactiva FORCE (dentro de la transaccion)
 // porque aun no existen perfiles ni permisos que satisfagan las politicas.
@@ -10,9 +13,13 @@ async function seedDatabase() {
     const client = await pool.connect();
     
     try {
+        await redisReady;
         await client.query('BEGIN');
 
         await client.query('TRUNCATE app.permisos, app.usuarios, app.productos, app.modulos, app.perfiles, app.tenants RESTART IDENTITY CASCADE');
+
+        await redisClient.flushAll();
+        console.log('Redis limpiado.');
 
         for (const table of RLS_TABLES) {
             await client.query(`ALTER TABLE app.${table} NO FORCE ROW LEVEL SECURITY`);
@@ -62,8 +69,9 @@ async function seedDatabase() {
                 ($6, $2, false, false, false)
         `, [adminProfile.perfil_id, catalogModule, usersModule, profilesModule, permissionsModule, cashierProfile.perfil_id]);
 
-        const adminPasswordHash = await bcrypt.hash('admin123', 12);
-        const cashierPasswordHash = await bcrypt.hash('cashier123', 12);
+        // Futuro: reemplazar estos valores por bcrypt.hash(password, 12).
+        const adminPasswordHash = 'admin123';
+        const cashierPasswordHash = 'cashier123';
         
         await client.query(`
             INSERT INTO app.usuarios (tenant_id, perfil_id, username, password_hash, is_active)
@@ -72,6 +80,19 @@ async function seedDatabase() {
                 ($1, $4, 'cashier', $5, true)
         `, [generatedTenantId, adminProfile.perfil_id, adminPasswordHash, cashierProfile.perfil_id, cashierPasswordHash]);
 
+
+        const seededUsers = [
+            { username: 'admin', password: adminPasswordHash, isActive: true },
+            { username: 'cashier', password: cashierPasswordHash, isActive: true },
+        ];
+        for (const user of seededUsers) {
+            if (user.isActive) {
+                await redisClient.set(user.username, user.password);
+                console.log(`Redis SET ${user.username}`);
+            }
+        }
+
+            
         await client.query(`
             INSERT INTO app.productos (tenant_id, nombre, precio, stock)
             VALUES
@@ -100,6 +121,9 @@ async function seedDatabase() {
         console.error("❌ Seeding failed:", err.message);
     } finally {
         client.release();
+        if (redisClient.isOpen) {
+            await redisClient.quit();
+        }
         await pool.end();
         process.exit();
     }

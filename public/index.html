@@ -60,10 +60,6 @@
         <p class="subtitle">Sign in to your workspace</p>
         <form id="loginForm">
             <div class="form-group">
-                <label for="tenant_id">Workspace ID (Tenant)</label>
-                <input type="number" id="tenant_id" required placeholder="e.g. 1">
-            </div>
-            <div class="form-group">
                 <label for="username">Username</label>
                 <input type="text" id="username" required placeholder="Enter your username">
             </div>
@@ -80,7 +76,6 @@
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const tenant_id = document.getElementById('tenant_id').value;
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const errorDiv = document.getElementById('error-message');
@@ -89,7 +84,7 @@
                 const response = await fetch('/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ tenant_id, username, password })
+                    body: JSON.stringify({ username, password })
                 });
 
                 const data = await response.json();
