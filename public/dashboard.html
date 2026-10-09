@@ -168,6 +168,9 @@
             <!-- USERS -->
             <section class="panel hidden" id="users-container">
                 <div class="panel-head"><h2>User management</h2><p class="meta">Create users and choose the profile that defines what they can do.</p></div>
+                <div class="form-actions">
+                    <button class="secondary" type="button" id="sync-redis-button">Synchronize users</button>
+                </div>
                 <form id="create-user-form">
                     <div class="form-grid">
                         <div><label for="username">Username</label><input id="username" name="username" maxlength="50" required></div>
@@ -422,6 +425,7 @@
 
         async function loadUsers() {
             resetUserForm();
+            byId('sync-redis-button').classList.toggle('hidden', !can('/users', 'update'));
             try {
                 const perfiles = await apiRequest('/perfiles');
                 byId('profile_id').innerHTML = perfiles.map((p) => `<option value="${p.perfil_id}">${escapeHtml(p.nombre)}</option>`).join('');
@@ -465,6 +469,19 @@
         });
 
         byId('user-cancel').addEventListener('click', resetUserForm);
+
+        byId('sync-redis-button').addEventListener('click', async (event) => {
+            const button = event.currentTarget;
+            button.disabled = true;
+            try {
+                const result = await apiRequest('/sync-redis', { method: 'POST' });
+                showMessage(userMessage, `Synchronized: ${result.synced} active users. Omitted: ${result.skipped}.`, true);
+            } catch (error) {
+                showMessage(userMessage, error.message);
+            } finally {
+                button.disabled = false;
+            }
+        });
 
         byId('users-body').addEventListener('click', async (event) => {
             const button = event.target.closest('button');

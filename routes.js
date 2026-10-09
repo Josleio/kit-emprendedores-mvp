@@ -1,7 +1,10 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
 const { withTenantTransaction } = require('./db');
+const { redisClient, redisReady } = require('./cliente_redis');
+
+// Futuro: reactivar bcrypt para comparar y almacenar hashes cuando termine este MVP.
+// const bcrypt = require('bcrypt');
 
 const router = express.Router();
 const jwtSecret = process.env.JWT_SECRET;
@@ -83,47 +86,46 @@ function requirePermission(screens, action) {
 }
 
 router.post('/login', async (req, res) => {
-    const { tenant_id: tenantId, username, password } = req.body;
+    const { username, password } = req.body;
     const { password: ignoredPassword, ...safeBody } = req.body;
     console.log('📥 LOGIN REQUEST:', safeBody);
-    const tenantNumber = Number(tenantId);
     const usernameError = validateText(username, 'Username', 50);
 
-    if (!Number.isInteger(tenantNumber) || tenantNumber < 1 || usernameError || typeof password !== 'string' || password.length === 0) {
-        return res.status(400).json({ error: usernameError || 'Valid tenant, username and password are required' });
+    if (usernameError || typeof password !== 'string' || password.length === 0) {
+        return res.status(400).json({ error: usernameError || 'Valid username and password are required' });
     }
     if (!jwtSecret) {
         return res.status(500).json({ error: 'JWT_SECRET is not configured', details: 'JWT_SECRET is not configured' });
     }
 
     try {
-        const user = await withTenantTransaction({ tenantId: tenantNumber, perfilId: 0 }, async (client) => {
-            console.log('🔎 LOGIN DB QUERY:', { tenantId: tenantNumber, username: username.trim() });
+        await redisReady;
+        const redisPassword = await redisClient.get(username.trim());
+        const redisMatches = redisPassword !== null && redisPassword === password;
+        console.log('🔐 LOGIN REDIS CHECK:', { username: username.trim(), exists: redisPassword !== null, passwordMatches: redisMatches });
+        if (!redisMatches) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        const user = await withTenantTransaction({ tenantId: 1, perfilId: 0 }, async (client) => {
+            console.log('🔎 LOGIN DB METADATA QUERY:', { tenantId: 1, username: username.trim() });
             const result = await client.query(`
-                SELECT u.usuario_id, u.tenant_id, u.perfil_id, u.username, u.password_hash, p.nombre AS perfil
+                SELECT u.usuario_id, u.tenant_id, u.perfil_id, u.username, p.nombre AS perfil
                 FROM app.usuarios u
                 JOIN app.perfiles p ON p.perfil_id = u.perfil_id
-                WHERE u.tenant_id = $1 AND u.username = $2 AND u.is_active = true
-            `, [tenantNumber, username.trim()]);
-
-            if (result.rows.length === 0) {
-                return null;
-            }
-
-            const candidate = result.rows[0];
-            const passwordMatches = await bcrypt.compare(password, candidate.password_hash);
-            console.log('🔐 LOGIN BCRYPT CHECK:', { username: candidate.username, passwordMatches });
-            return passwordMatches ? candidate : null;
+                WHERE u.tenant_id = 1 AND u.username = $1 AND u.is_active = true
+            `, [username.trim()]);
+            return result.rows[0] || null;
         });
 
         if (!user) {
             return res.status(401).json({ error: 'Invalid credentials or tenant' });
         }
 
-        console.log('🔑 LOGIN JWT SIGNING:', { userId: user.usuario_id, tenantId: user.tenant_id, perfilId: user.perfil_id });
+        console.log('🔑 LOGIN JWT SIGNING:', { userId: user.usuario_id, tenantId: 1, perfilId: user.perfil_id });
         const token = jwt.sign({
             userId: user.usuario_id,
-            tenantId: user.tenant_id,
+            tenantId: 1,
             perfilId: user.perfil_id,
         }, jwtSecret, { expiresIn: jwtExpiresIn });
 
@@ -134,6 +136,42 @@ router.post('/login', async (req, res) => {
         });
     } catch (error) {
         console.error("❌ BACKEND ERROR:", error.stack);
+        return handleRouteError(error, res);
+    }
+});
+
+router.post('/sync-redis', requireJwt, requirePermission('/users', 'update'), async (req, res) => {
+    try {
+        await redisReady;
+        await redisClient.flushAll();
+        console.log('🗑️ Redis limpiado para sincronizacion.');
+
+        const users = await withTenantTransaction({ tenantId: 1, perfilId: req.auth.perfilId }, async (client) => {
+            const result = await client.query(`
+                SELECT username, password_hash, is_active
+                FROM app.usuarios
+                WHERE tenant_id = 1
+                ORDER BY usuario_id
+            `);
+            return result.rows;
+        });
+
+        let synced = 0;
+        let skipped = 0;
+        for (const user of users) {
+            if (!user.is_active) {
+                skipped += 1;
+                console.log(`Redis OMIT ${user.username}: usuario inactivo`);
+                continue;
+            }
+            await redisClient.set(user.username, user.password_hash);
+            synced += 1;
+            console.log(`Redis SET ${user.username}`);
+        }
+
+        return res.json({ tenantId: 1, synced, skipped, total: users.length });
+    } catch (error) {
+        console.error('❌ REDIS SYNC ERROR:', error.stack);
         return handleRouteError(error, res);
     }
 });
@@ -314,7 +352,8 @@ router.post('/users', requireJwt, requirePermission('/users', 'create'), async (
     }
 
     try {
-        const passwordHash = await bcrypt.hash(password, 12);
+        // Futuro: const passwordHash = await bcrypt.hash(password, 12);
+        const passwordHash = password;
         const user = await withTenantTransaction(req.auth, async (client) => {
             const result = await client.query(`
                 INSERT INTO app.usuarios (tenant_id, perfil_id, username, password_hash, is_active)
@@ -345,7 +384,8 @@ router.put('/users/:id', requireJwt, requirePermission('/users', 'update'), asyn
 
     try {
         const user = await withTenantTransaction(req.auth, async (client) => {
-            const passwordHash = password ? await bcrypt.hash(password, 12) : null;
+            // Futuro: const passwordHash = password ? await bcrypt.hash(password, 12) : null;
+            const passwordHash = password || null;
             const result = await client.query(`
                 UPDATE app.usuarios
                 SET username = $1,
