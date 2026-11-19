@@ -83,6 +83,7 @@
         th, td { text-align: left; padding: .8rem 1rem; border-bottom: 1px solid var(--border); }
         tbody tr:last-child td { border-bottom: 0; }
         tbody tr:hover { background: #f8fbff; }
+        table.compact th, table.compact td { padding: .55rem .7rem; font-size: .84rem; }
         td.empty { text-align: center; color: var(--muted); padding: 1.6rem; }
         .actions { display: flex; gap: .4rem; flex-wrap: wrap; }
         td.actions { display: table-cell; white-space: nowrap; }
@@ -113,6 +114,50 @@
         .checks .inline-check { background: #fff; border: 1px solid var(--border); border-radius: 999px; padding: .25rem .75rem; font-size: .85rem; }
         .badge { background: #e3f6ea; color: var(--ok); border-radius: 999px; padding: .1rem .55rem; font-size: .72rem; font-weight: 700; margin-left: .5rem; }
 
+
+        /* ---------- Analitica, ventas y graficos ---------- */
+        .toolbar-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1rem; margin-bottom: 1.4rem; }
+        .kpi { background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: .2rem; }
+        .kpi-label { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; }
+        .kpi-value { font-size: 1.55rem; color: var(--blue); }
+        .kpi.good .kpi-value { color: var(--ok); }
+        .kpi.bad .kpi-value { color: var(--danger); }
+        .kpi small { color: var(--muted); }
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.2rem; margin-bottom: 1.2rem; }
+        .card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem; min-width: 0; }
+        .card h3 { margin: 0 0 .9rem; font-size: 1rem; }
+        .bars { display: flex; flex-direction: column; gap: .6rem; }
+        .bar-row { display: grid; grid-template-columns: minmax(80px, 34%) 1fr auto; gap: .6rem; align-items: center; font-size: .88rem; }
+        .bar-track { background: #eef2f6; border-radius: 999px; height: 10px; overflow: hidden; }
+        .bar-fill { background: linear-gradient(90deg, var(--blue), #0a74da); height: 100%; border-radius: 999px; }
+        svg.chart { width: 100%; height: auto; display: block; }
+        .pill.warn { background: #fff4e0; color: #9a5b00; }
+        .cart-total { text-align: right; font-size: 1.25rem; font-weight: 700; margin-top: .8rem; }
+        .detail-row td { background: #f8fafc; color: var(--muted); font-size: .9rem; }
+        .small-input { max-width: 110px; }
+
+
+        /* ---------- Pestanas, JSON y diagrama de integracion ---------- */
+        .tabs { display: flex; gap: .4rem; margin-bottom: 1.2rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+        .tab { background: transparent; color: var(--muted); border-radius: 8px 8px 0 0; padding: .6rem 1.1rem; }
+        .tab:hover { background: #f1f5f9; }
+        .tab.active { color: var(--blue); background: var(--blue-soft); box-shadow: inset 0 -3px 0 var(--blue); }
+        pre.json { background: #0f172a; color: #e2e8f0; border-radius: 8px; padding: .8rem; overflow: auto; font-size: .78rem; max-height: 260px; margin: .5rem 0 0; }
+        details summary { cursor: pointer; color: var(--blue); font-weight: 600; }
+        .flow { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .7rem; margin: .8rem 0; }
+        .flow-box { background: #fff; border: 2px solid var(--blue); border-radius: 12px; padding: .7rem 1rem; text-align: center; min-width: 120px; font-weight: 700; }
+        .flow-box small { display: block; font-weight: 400; color: var(--muted); }
+        .flow-box.ok { border-color: var(--ok); }
+        .flow-box.off { border-color: var(--danger); }
+        .flow-arrow { color: var(--blue); font-weight: 700; font-size: .85rem; text-align: center; }
+        .stat-list { list-style: none; margin: .6rem 0 0; padding: 0; }
+        .stat-list li { display: flex; justify-content: space-between; padding: .35rem 0; border-bottom: 1px solid var(--border); font-size: .9rem; }
+        .stat-list li:last-child { border-bottom: 0; }
+        .status-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: .4rem; }
+        .status-head h3 { margin: 0; }
+        .chip { display: inline-block; background: var(--blue-soft); color: var(--blue); border-radius: 999px; padding: .15rem .7rem; font-size: .8rem; font-weight: 700; margin: 0 .4rem .4rem 0; }
+
         @media (max-width: 860px) {
             .layout { grid-template-columns: 1fr; padding: 1rem; }
             .sidebar { position: static; }
@@ -142,35 +187,80 @@
         <main class="content">
             <p class="message" id="workspace-message"></p>
 
-            <!-- CATALOG -->
-            <section class="panel hidden" id="catalog-container">
-                <div class="panel-head"><h2>Catalog</h2><p class="meta">Products available in your store.</p></div>
-                <form id="product-form">
+            <!-- VENTAS -->
+            <section class="panel hidden" id="ventas-container">
+                <div class="panel-head"><h2>Sales</h2><p class="meta">Register a sale: stock is discounted automatically and the price is saved as charged.</p></div>
+                <form id="venta-form">
                     <div class="form-grid">
-                        <div><label for="product-nombre">Product</label><input id="product-nombre" maxlength="100" required></div>
-                        <div><label for="product-precio">Price</label><input id="product-precio" type="number" min="0" step="0.01" required></div>
-                        <div><label for="product-stock">Stock</label><input id="product-stock" type="number" min="0" step="1" value="0" required></div>
+                        <div><label for="venta-cliente">Customer</label><select id="venta-cliente"></select></div>
+                        <div><label for="venta-metodo">Payment method</label><select id="venta-metodo" required></select></div>
                     </div>
+                    <div class="form-grid" style="margin-top:1rem">
+                        <div><label for="venta-producto">Product</label><select id="venta-producto"></select></div>
+                        <div><label for="venta-cantidad">Quantity</label><input id="venta-cantidad" type="number" min="1" step="1" value="1"></div>
+                        <div style="align-self:end"><button class="secondary" type="button" id="venta-add">Add to sale</button></div>
+                    </div>
+                    <div class="table-wrap" style="margin-top:1rem">
+                        <table>
+                            <thead><tr><th>Product</th><th>Price</th><th>Qty</th><th>Subtotal</th><th></th></tr></thead>
+                            <tbody id="cart-body"></tbody>
+                        </table>
+                    </div>
+                    <div class="cart-total">Total: <span id="cart-total">0.00</span></div>
                     <div class="form-actions">
-                        <button class="primary" type="submit" id="product-submit">Add product</button>
-                        <button class="secondary hidden" type="button" id="product-cancel">Cancel</button>
+                        <button class="primary" type="submit">Register sale</button>
+                        <button class="secondary" type="button" id="venta-clear">Clear</button>
                     </div>
                 </form>
-                <p class="message" id="catalog-message"></p>
+                <p class="message" id="venta-message"></p>
+                <h3 style="margin:1.4rem 0 .8rem">Recent sales</h3>
                 <div class="table-wrap">
                     <table>
-                        <thead><tr><th>Product</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead>
-                        <tbody id="catalog-body"></tbody>
+                        <thead><tr><th>#</th><th>Date</th><th>Customer</th><th>Units</th><th>Total</th><th>Profit</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody id="ventas-body"></tbody>
                     </table>
                 </div>
+            </section>
+
+            <!-- CRUD genericos: se construyen desde CRUD_SCREENS en el script -->
+            <section class="panel hidden" id="catalog-container"></section>
+            <section class="panel hidden" id="clientes-container"></section>
+            <section class="panel hidden" id="categorias-container"></section>
+            <section class="panel hidden" id="proveedores-container"></section>
+
+            <!-- ANALITICA: dashboard de KPI por rol, proceso ETL y tabla de KPI -->
+            <section class="panel hidden" id="analitica-container">
+                <div class="toolbar-row">
+                    <div class="panel-head" style="margin:0">
+                        <h2>KPI Dashboard</h2>
+                        <p class="meta" id="analitica-updated">Indicators calculated from PostgreSQL and stored in MongoDB.</p>
+                    </div>
+                    <div class="actions">
+                        <select id="analitica-rol" class="hidden" style="width:auto"></select>
+                        <button class="primary hidden" id="etl-button">Refresh data</button>
+                    </div>
+                </div>
+                <div class="tabs" id="analitica-tabs">
+                    <button class="tab active" data-tab="dashboard">Dashboard</button>
+                    <button class="tab" data-tab="etl">ETL process</button>
+                    <button class="tab" data-tab="catalogo">KPI table</button>
+                </div>
+                <p class="message" id="analitica-message"></p>
+                <div id="tab-dashboard"></div>
+                <div id="tab-etl" class="hidden"></div>
+                <div id="tab-catalogo" class="hidden"></div>
+            </section>
+
+            <!-- INTEGRACION -->
+            <section class="panel hidden" id="integracion-container">
+                <div class="panel-head"><h2>Integration</h2><p class="meta">How PostgreSQL, Redis and MongoDB work together in this solution (live status).</p></div>
+                <p class="message" id="integracion-message"></p>
+                <div id="integracion-body"></div>
             </section>
 
             <!-- USERS -->
             <section class="panel hidden" id="users-container">
                 <div class="panel-head"><h2>User management</h2><p class="meta">Create users and choose the profile that defines what they can do.</p></div>
-                <div class="form-actions">
-                    <button class="secondary" type="button" id="sync-redis-button">Synchronize users</button>
-                </div>
                 <form id="create-user-form">
                     <div class="form-grid">
                         <div><label for="username">Username</label><input id="username" name="username" maxlength="50" required></div>
@@ -283,10 +373,16 @@
         // MENU Y NAVEGACION
         // ==========================================
         const SCREENS = {
-            '/catalog':  { el: 'catalog-container',  icon: '🛍️', load: () => loadCatalog() },
-            '/users':    { el: 'users-container',    icon: '👤', load: () => loadUsers() },
-            '/perfiles': { el: 'perfiles-container', icon: '🪪', load: () => loadPerfiles() },
-            '/permisos': { el: 'permisos-container', icon: '🔐', load: () => loadPermisos() },
+            '/ventas':      { el: 'ventas-container',      icon: '🧾', load: () => loadVentas() },
+            '/clientes':    { el: 'clientes-container',    icon: '🙋', load: () => loadCrud('/clientes') },
+            '/catalog':     { el: 'catalog-container',     icon: '🛍️', load: () => loadCrud('/catalog') },
+            '/categorias':  { el: 'categorias-container',  icon: '🏷️', load: () => loadCrud('/categorias') },
+            '/proveedores': { el: 'proveedores-container', icon: '🚚', load: () => loadCrud('/proveedores') },
+            '/analitica':   { el: 'analitica-container',   icon: '📊', load: () => loadAnalitica() },
+            '/integracion': { el: 'integracion-container', icon: '🔗', load: () => loadIntegracion() },
+            '/users':       { el: 'users-container',       icon: '👤', load: () => loadUsers() },
+            '/perfiles':    { el: 'perfiles-container',    icon: '🪪', load: () => loadPerfiles() },
+            '/permisos':    { el: 'permisos-container',    icon: '🔐', load: () => loadPermisos() },
         };
 
         function renderMenu(items) {
@@ -322,88 +418,511 @@
         });
 
         // ==========================================
-        // CATALOG
+        // CRUD GENERICO (catalogo, clientes, categorias, proveedores)
+        // Cada pantalla se describe con una configuracion: campos del formulario y columnas de la tabla.
         // ==========================================
-        const catalogMessage = byId('catalog-message');
-        const productForm = byId('product-form');
-        let editingProductId = null;
+        const money = (value) => (value === null || value === undefined) ? '—' : Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const percent = (value) => (value === null || value === undefined) ? '—' : `${Number(value).toFixed(1)}%`;
 
-        function resetProductForm() {
-            editingProductId = null;
-            productForm.reset();
-            byId('product-cancel').classList.add('hidden');
-            byId('product-submit').textContent = 'Add product';
-            productForm.classList.toggle('hidden', !can('/catalog', 'create'));
+        const CRUD_SCREENS = {
+            '/catalog': {
+                el: 'catalog-container', title: 'Catalog', noun: 'product', api: '/catalog', id: 'producto_id', lookups: '/catalog/lookups',
+                subtitle: 'Products with price, cost and stock. The cost is what lets us calculate profit and ROI.',
+                fields: [
+                    { key: 'nombre', label: 'Product', max: 100, required: true },
+                    { key: 'precio', label: 'Price', type: 'number', step: '0.01', min: 0, required: true },
+                    { key: 'costo', label: 'Cost', type: 'number', step: '0.01', min: 0, value: 0 },
+                    { key: 'stock', label: 'Stock', type: 'number', step: '1', min: 0, value: 0 },
+                    { key: 'categoria_id', label: 'Category', type: 'select', options: 'categorias' },
+                    { key: 'proveedor_id', label: 'Supplier', type: 'select', options: 'proveedores' },
+                    { key: 'unidad_id', label: 'Unit', type: 'select', options: 'unidades' },
+                    { key: 'referencia_almacen', label: 'Reference', max: 45 },
+                ],
+                columns: [['nombre', 'Product'], ['precio', 'Price', 'money'], ['costo', 'Cost', 'money'], ['stock', 'Stock'], ['categoria', 'Category'], ['proveedor', 'Supplier']],
+            },
+            '/clientes': {
+                el: 'clientes-container', title: 'Customers', noun: 'customer', api: '/clientes', id: 'cliente_id',
+                subtitle: 'People who buy from your store.',
+                fields: [
+                    { key: 'nombre_completo', label: 'Full name', max: 100, required: true },
+                    { key: 'telefono', label: 'Phone', max: 20 },
+                ],
+                columns: [['nombre_completo', 'Name'], ['telefono', 'Phone']],
+            },
+            '/categorias': {
+                el: 'categorias-container', title: 'Categories', noun: 'category', api: '/categorias', id: 'categoria_id',
+                subtitle: 'Groups used to organize and analyze your products.',
+                fields: [{ key: 'nombre', label: 'Name', max: 45, required: true }],
+                columns: [['nombre', 'Name']],
+            },
+            '/proveedores': {
+                el: 'proveedores-container', title: 'Suppliers', noun: 'supplier', api: '/proveedores', id: 'proveedor_id',
+                subtitle: 'Who provides your products.',
+                fields: [
+                    { key: 'nombre', label: 'Name', max: 100, required: true },
+                    { key: 'telefono', label: 'Phone', max: 20 },
+                ],
+                columns: [['nombre', 'Name'], ['telefono', 'Phone']],
+            },
+        };
+
+        function buildCrud(ruta) {
+            const cfg = CRUD_SCREENS[ruta];
+            const root = byId(cfg.el);
+            root.innerHTML = `
+                <div class="panel-head"><h2>${cfg.title}</h2><p class="meta">${cfg.subtitle}</p></div>
+                <form>
+                    <div class="form-grid">${cfg.fields.map((f) => `
+                        <div><label>${f.label}</label>${f.type === 'select'
+                            ? `<select data-key="${f.key}"></select>`
+                            : `<input data-key="${f.key}" type="${f.type || 'text'}" ${f.max ? `maxlength="${f.max}"` : ''} ${f.step ? `step="${f.step}"` : ''} ${f.min !== undefined ? `min="${f.min}"` : ''} ${f.required ? 'required' : ''}>`}
+                        </div>`).join('')}
+                    </div>
+                    <div class="form-actions">
+                        <button class="primary" type="submit">Add ${cfg.noun}</button>
+                        <button class="secondary hidden" type="button" data-role="cancel">Cancel</button>
+                    </div>
+                </form>
+                <p class="message"></p>
+                <div class="table-wrap"><table>
+                    <thead><tr>${cfg.columns.map((c) => `<th>${c[1]}</th>`).join('')}<th>Actions</th></tr></thead>
+                    <tbody></tbody>
+                </table></div>`;
+
+            const ui = { form: root.querySelector('form'), message: root.querySelector('.message'), tbody: root.querySelector('tbody') };
+            ui.submit = ui.form.querySelector('[type="submit"]');
+            ui.cancel = ui.form.querySelector('[data-role="cancel"]');
+            cfg.ui = ui;
+            cfg.rows = [];
+            cfg.editingId = null;
+
+            const field = (key) => ui.form.querySelector(`[data-key="${key}"]`);
+            const readField = (f) => {
+                const raw = field(f.key).value;
+                if (f.type === 'select' || f.type === 'number') return raw === '' ? null : Number(raw);
+                return raw.trim() === '' ? null : raw.trim();
+            };
+
+            ui.form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const body = {};
+                cfg.fields.forEach((f) => { body[f.key] = readField(f); });
+                try {
+                    if (cfg.editingId) {
+                        await apiRequest(`${cfg.api}/${cfg.editingId}`, { method: 'PUT', body: JSON.stringify(body) });
+                    } else {
+                        await apiRequest(cfg.api, { method: 'POST', body: JSON.stringify(body) });
+                    }
+                    const saved = cfg.editingId ? `${cfg.noun} updated.` : `${cfg.noun} added.`;
+                    await loadCrud(ruta);
+                    showMessage(ui.message, saved.charAt(0).toUpperCase() + saved.slice(1), true);
+                } catch (error) {
+                    showMessage(ui.message, error.message);
+                }
+            });
+
+            ui.cancel.addEventListener('click', () => resetCrudForm(ruta));
+
+            ui.tbody.addEventListener('click', async (event) => {
+                const button = event.target.closest('button');
+                if (!button) return;
+                const row = cfg.rows.find((r) => String(r[cfg.id]) === button.dataset.id);
+                try {
+                    if (button.dataset.action === 'delete') {
+                        if (!window.confirm(`Delete this ${cfg.noun}?`)) return;
+                        await apiRequest(`${cfg.api}/${row[cfg.id]}`, { method: 'DELETE' });
+                        await loadCrud(ruta);
+                        showMessage(ui.message, `${cfg.noun.charAt(0).toUpperCase() + cfg.noun.slice(1)} deleted.`, true);
+                    } else {
+                        cfg.editingId = row[cfg.id];
+                        ui.form.classList.remove('hidden');
+                        cfg.fields.forEach((f) => { field(f.key).value = row[f.key] ?? ''; });
+                        ui.cancel.classList.remove('hidden');
+                        ui.submit.textContent = 'Save changes';
+                        showMessage(ui.message, '');
+                        ui.form.scrollIntoView({ behavior: 'smooth' });
+                    }
+                } catch (error) {
+                    showMessage(ui.message, error.message);
+                }
+            });
         }
 
-        async function loadCatalog() {
-            resetProductForm();
+        function resetCrudForm(ruta) {
+            const cfg = CRUD_SCREENS[ruta];
+            cfg.editingId = null;
+            cfg.ui.form.reset();
+            cfg.fields.forEach((f) => { if (f.value !== undefined) cfg.ui.form.querySelector(`[data-key="${f.key}"]`).value = f.value; });
+            cfg.ui.cancel.classList.add('hidden');
+            cfg.ui.submit.textContent = `Add ${cfg.noun}`;
+            cfg.ui.form.classList.toggle('hidden', !can(ruta, 'create'));
+        }
+
+        async function loadCrud(ruta) {
+            const cfg = CRUD_SCREENS[ruta];
+            if (!cfg.ui) buildCrud(ruta);
             try {
-                const products = await apiRequest('/catalog');
-                byId('catalog-body').innerHTML = products.length ? products.map((product) => `
+                if (cfg.lookups) {
+                    const lookups = await apiRequest(cfg.lookups);
+                    cfg.fields.filter((f) => f.type === 'select').forEach((f) => {
+                        cfg.ui.form.querySelector(`[data-key="${f.key}"]`).innerHTML = '<option value="">(none)</option>'
+                            + (lookups[f.options] || []).map((o) => `<option value="${o.id}">${escapeHtml(o.nombre)}</option>`).join('');
+                    });
+                }
+                resetCrudForm(ruta);
+                cfg.rows = await apiRequest(cfg.api);
+                cfg.ui.tbody.innerHTML = cfg.rows.length ? cfg.rows.map((row) => `
                     <tr>
-                        <td>${escapeHtml(product.nombre)}</td>
-                        <td>${Number(product.precio).toFixed(2)}</td>
-                        <td>${product.stock}</td>
+                        ${cfg.columns.map(([key, , type]) => `<td>${type === 'money' ? money(row[key]) : (row[key] === null || row[key] === '' ? '—' : escapeHtml(row[key]))}</td>`).join('')}
                         <td class="actions">
-                            ${can('/catalog', 'update') ? `<button class="secondary" data-action="edit" data-id="${product.producto_id}" data-nombre="${escapeHtml(product.nombre)}" data-precio="${product.precio}" data-stock="${product.stock}">Edit</button>` : ''}
-                            ${can('/catalog', 'delete') ? `<button class="danger" data-action="delete" data-id="${product.producto_id}">Delete</button>` : ''}
+                            ${can(ruta, 'update') ? `<button class="secondary" data-action="edit" data-id="${row[cfg.id]}">Edit</button>` : ''}
+                            ${can(ruta, 'delete') ? `<button class="danger" data-action="delete" data-id="${row[cfg.id]}">Delete</button>` : ''}
                         </td>
-                    </tr>
-                `).join('') : emptyRow(4, 'No products yet.');
+                    </tr>`).join('') : emptyRow(cfg.columns.length + 1, `No ${cfg.noun}s yet.`);
+                showMessage(cfg.ui.message, '');
             } catch (error) {
-                showMessage(catalogMessage, error.message);
+                showMessage(cfg.ui.message, error.message);
             }
         }
 
-        productForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const body = JSON.stringify({
-                nombre: byId('product-nombre').value,
-                precio: byId('product-precio').value,
-                stock: byId('product-stock').value,
-            });
+        // ==========================================
+        // VENTAS (punto de venta + historial)
+        // ==========================================
+        const ventaMessage = byId('venta-message');
+        let ventaLookups = { clientes: [], productos: [], metodos: [] };
+        let cart = [];
+
+        function renderCart() {
+            byId('cart-body').innerHTML = cart.length ? cart.map((line, index) => `
+                <tr>
+                    <td>${escapeHtml(line.nombre)}</td>
+                    <td>${money(line.precio)}</td>
+                    <td>${line.cantidad}</td>
+                    <td>${money(line.precio * line.cantidad)}</td>
+                    <td><button class="danger" type="button" data-remove="${index}">Remove</button></td>
+                </tr>`).join('') : emptyRow(5, 'Add products to start a sale.');
+            byId('cart-total').textContent = money(cart.reduce((sum, line) => sum + line.precio * line.cantidad, 0));
+        }
+
+        async function loadVentas() {
+            byId('venta-form').classList.toggle('hidden', !can('/ventas', 'create'));
             try {
-                if (editingProductId) {
-                    await apiRequest(`/catalog/${editingProductId}`, { method: 'PUT', body });
-                    await loadCatalog();
-                    showMessage(catalogMessage, 'Product updated.', true);
-                } else {
-                    await apiRequest('/catalog', { method: 'POST', body });
-                    await loadCatalog();
-                    showMessage(catalogMessage, 'Product added.', true);
-                }
+                ventaLookups = await apiRequest('/ventas/lookups');
+                byId('venta-cliente').innerHTML = '<option value="">Walk-in customer</option>'
+                    + ventaLookups.clientes.map((c) => `<option value="${c.cliente_id}">${escapeHtml(c.nombre_completo)}</option>`).join('');
+                byId('venta-metodo').innerHTML = ventaLookups.metodos.map((m) => `<option value="${m.metodo_pago_id}">${escapeHtml(m.nombre)}</option>`).join('');
+                byId('venta-producto').innerHTML = ventaLookups.productos
+                    .map((p) => `<option value="${p.producto_id}">${escapeHtml(p.nombre)} — ${money(p.precio)} (stock ${p.stock})</option>`).join('');
+                renderCart();
+                await loadVentasHistory();
             } catch (error) {
-                showMessage(catalogMessage, error.message);
+                showMessage(ventaMessage, error.message);
+            }
+        }
+
+        async function loadVentasHistory() {
+            const ventas = await apiRequest('/ventas');
+            byId('ventas-body').innerHTML = ventas.length ? ventas.map((v) => `
+                <tr data-venta="${v.venta_id}">
+                    <td>${v.venta_id}</td>
+                    <td>${new Date(v.fecha_venta).toLocaleString()}</td>
+                    <td>${escapeHtml(v.cliente || 'Walk-in')}</td>
+                    <td>${v.unidades}</td>
+                    <td>${money(v.total)}</td>
+                    <td>${money(v.utilidad)}</td>
+                    <td><span class="pill ${v.estado === 'pagada' ? 'ok' : 'off'}">${escapeHtml(v.estado)}</span></td>
+                    <td class="actions">
+                        <button class="secondary" data-action="view" data-id="${v.venta_id}">View</button>
+                        ${can('/ventas', 'update') && v.estado !== 'anulada' ? `<button class="danger" data-action="cancel" data-id="${v.venta_id}">Cancel</button>` : ''}
+                    </td>
+                </tr>`).join('') : emptyRow(8, 'No sales yet.');
+        }
+
+        byId('venta-add').addEventListener('click', () => {
+            const productId = Number(byId('venta-producto').value);
+            const quantity = Number(byId('venta-cantidad').value);
+            const product = ventaLookups.productos.find((p) => p.producto_id === productId);
+            if (!product || !Number.isInteger(quantity) || quantity < 1) {
+                showMessage(ventaMessage, 'Choose a product and a quantity of at least 1.');
+                return;
+            }
+            const existing = cart.find((line) => line.producto_id === productId);
+            if ((existing ? existing.cantidad : 0) + quantity > product.stock) {
+                showMessage(ventaMessage, `Only ${product.stock} units of ${product.nombre} in stock.`);
+                return;
+            }
+            if (existing) existing.cantidad += quantity;
+            else cart.push({ producto_id: productId, nombre: product.nombre, precio: Number(product.precio), cantidad: quantity });
+            byId('venta-cantidad').value = 1;
+            showMessage(ventaMessage, '');
+            renderCart();
+        });
+
+        byId('cart-body').addEventListener('click', (event) => {
+            const button = event.target.closest('button[data-remove]');
+            if (!button) return;
+            cart.splice(Number(button.dataset.remove), 1);
+            renderCart();
+        });
+
+        byId('venta-clear').addEventListener('click', () => { cart = []; renderCart(); showMessage(ventaMessage, ''); });
+
+        byId('venta-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            if (!cart.length) {
+                showMessage(ventaMessage, 'Add at least one product.');
+                return;
+            }
+            try {
+                const result = await apiRequest('/ventas', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        cliente_id: byId('venta-cliente').value ? Number(byId('venta-cliente').value) : null,
+                        metodo_pago_id: Number(byId('venta-metodo').value),
+                        items: cart.map((line) => ({ producto_id: line.producto_id, cantidad: line.cantidad })),
+                    })
+                });
+                cart = [];
+                await loadVentas();
+                showMessage(ventaMessage, `Sale #${result.venta_id} registered. Total: ${money(result.total)}`, true);
+            } catch (error) {
+                showMessage(ventaMessage, error.message);
             }
         });
 
-        byId('product-cancel').addEventListener('click', resetProductForm);
-
-        byId('catalog-body').addEventListener('click', async (event) => {
+        byId('ventas-body').addEventListener('click', async (event) => {
             const button = event.target.closest('button');
             if (!button) return;
+            const row = button.closest('tr');
             try {
-                if (button.dataset.action === 'delete') {
-                    if (!window.confirm('Delete this product?')) return;
-                    await apiRequest(`/catalog/${button.dataset.id}`, { method: 'DELETE' });
-                    await loadCatalog();
-                    showMessage(catalogMessage, 'Product deleted.', true);
+                if (button.dataset.action === 'cancel') {
+                    if (!window.confirm('Cancel this sale? The stock will return to the inventory.')) return;
+                    await apiRequest(`/ventas/${button.dataset.id}/anular`, { method: 'PATCH' });
+                    await loadVentas();
+                    showMessage(ventaMessage, `Sale #${button.dataset.id} cancelled.`, true);
+                } else if (row.nextElementSibling?.classList.contains('detail-row')) {
+                    row.nextElementSibling.remove();
                 } else {
-                    editingProductId = button.dataset.id;
-                    productForm.classList.remove('hidden');
-                    byId('product-nombre').value = button.dataset.nombre;
-                    byId('product-precio').value = button.dataset.precio;
-                    byId('product-stock').value = button.dataset.stock;
-                    byId('product-cancel').classList.remove('hidden');
-                    byId('product-submit').textContent = 'Save changes';
-                    showMessage(catalogMessage, '');
-                    productForm.scrollIntoView({ behavior: 'smooth' });
+                    const items = await apiRequest(`/ventas/${button.dataset.id}`);
+                    row.insertAdjacentHTML('afterend', `<tr class="detail-row"><td colspan="8">${items.map((i) =>
+                        `${escapeHtml(i.nombre)} × ${i.cantidad} @ ${money(i.precio_unitario)} = ${money(i.subtotal)}`).join(' &nbsp;·&nbsp; ')}</td></tr>`);
                 }
             } catch (error) {
-                showMessage(catalogMessage, error.message);
+                showMessage(ventaMessage, error.message);
             }
         });
+
+        // ==========================================
+        // ANALITICA: dashboard de KPI por rol, proceso ETL y tabla de KPI
+        // ==========================================
+        const analyticsMessage = byId('analitica-message');
+        let analyticsRole = null;
+
+        const unitFormats = { money, percent, unidades: (v) => `${Number(v)} u.`, count: (v) => String(v) };
+        const fmtUnit = (value, unit) => (unitFormats[unit] || String)(value);
+
+        function barList(items, unit) {
+            if (!items.length) return '<p class="meta">Nothing to show.</p>';
+            const max = Math.max(...items.map((item) => item.valor), 1);
+            return `<div class="bars">${items.map((item) => `
+                <div class="bar-row">
+                    <span>${escapeHtml(item.etiqueta)}</span>
+                    <div class="bar-track"><div class="bar-fill" style="width:${Math.max((item.valor / max) * 100, 2)}%"></div></div>
+                    <strong>${fmtUnit(item.valor, unit)}</strong>
+                </div>`).join('')}</div>`;
+        }
+
+        function seriesChart(points, unit) {
+            const width = 640, height = 190, pad = 26;
+            const max = Math.max(...points.map((p) => p.valor), 1);
+            const barWidth = (width - pad * 2) / points.length;
+            const bars = points.map((p, i) => {
+                const h = (p.valor / max) * (height - pad * 2);
+                return `<rect x="${pad + i * barWidth + 1}" y="${height - pad - h}" width="${Math.max(barWidth - 2, 1)}" height="${h}" rx="2" fill="#0a74da"><title>${p.fecha}: ${fmtUnit(p.valor, unit)}</title></rect>`;
+            }).join('');
+            return `<svg class="chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Time series">
+                ${bars}<line x1="${pad}" y1="${height - pad}" x2="${width - pad}" y2="${height - pad}" stroke="#cbd5df"/>
+                <text x="${pad}" y="${height - 8}" font-size="11" fill="#5b6770">${points[0].fecha}</text>
+                <text x="${width - pad}" y="${height - 8}" font-size="11" text-anchor="end" fill="#5b6770">${points[points.length - 1].fecha}</text>
+                <text x="${pad}" y="14" font-size="11" fill="#5b6770">max ${fmtUnit(max, unit)}</text></svg>`;
+        }
+
+        function tableFromResult(result) {
+            return `<div class="table-wrap"><table><thead><tr>${result.columnas.map((c) => `<th>${escapeHtml(c)}</th>`).join('')}</tr></thead>
+                <tbody>${result.filas.map((row) => `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+        }
+
+        function renderDashboard(data) {
+            const box = byId('tab-dashboard');
+            const select = byId('analitica-rol');
+            select.classList.toggle('hidden', data.roles_disponibles.length < 2);
+            select.innerHTML = data.roles_disponibles.map((r) => `<option value="${r}" ${r === data.rol ? 'selected' : ''}>Dashboard: ${r}</option>`).join('');
+
+            if (data.sin_rol) {
+                byId('analitica-updated').textContent = 'No KPI dashboard for this profile.';
+                box.innerHTML = '<p class="meta">KPI dashboards exist for the roles Administrador, Gerente and Cajero.</p>';
+                return;
+            }
+            if (!data.resultados.length) {
+                byId('analitica-updated').textContent = `Role: ${data.rol} · ${data.kpis_del_rol} KPIs`;
+                box.innerHTML = '<p class="meta">Nothing is calculated yet. A user who can refresh data must press <strong>Refresh data</strong> to run the ETL (PostgreSQL → MongoDB).</p>';
+                return;
+            }
+            const last = data.resultados.map((r) => new Date(r.generado_en).getTime()).reduce((a, b) => Math.max(a, b));
+            byId('analitica-updated').textContent = `Role: ${data.rol} · ${data.resultados.length} KPIs · Last update: ${new Date(last).toLocaleString()}`;
+
+            const cards = data.resultados.filter((r) => r.visual === 'tarjeta').map((r) => `
+                <div class="kpi ${r.resultado.tono || ''}"><span class="kpi-label">${escapeHtml(r.nombre)} <small>(${r.codigo})</small></span>
+                    <strong class="kpi-value">${fmtUnit(r.resultado.valor, r.resultado.unidad)}</strong><small>${escapeHtml(r.resultado.nota || '')}</small></div>`).join('');
+
+            const others = data.resultados.filter((r) => r.visual !== 'tarjeta').map((r) => {
+                let content = '';
+                if (r.visual === 'barras') content = barList(r.resultado.items, r.resultado.unidad);
+                else if (r.visual === 'serie') content = seriesChart(r.resultado.puntos, r.resultado.unidad);
+                else if (r.visual === 'tabla') content = r.resultado.filas.length ? tableFromResult(r.resultado) : '<p class="meta">No associations found.</p>';
+                const wide = r.visual === 'serie' || r.visual === 'tabla';
+                return `<div class="card" ${wide ? 'style="grid-column:1/-1"' : ''}><h3>${escapeHtml(r.nombre)} <small style="color:var(--muted)">(${r.codigo})</small></h3>${content}</div>`;
+            }).join('');
+
+            const pythonHint = data.rol === 'Gerente' && !data.resultados.some((r) => r.codigo === 'K14')
+                ? '<p class="meta">KPI K14 (products bought together) is calculated with Python: run <code>python analitica/analisis.py</code>.</p>' : '';
+            box.innerHTML = `${cards ? `<div class="kpi-grid">${cards}</div>` : ''}<div class="grid-2">${others}</div>${pythonHint}`;
+        }
+
+        function renderEtl({ pasos, documentos }) {
+            const box = byId('tab-etl');
+            if (!pasos.length) {
+                box.innerHTML = '<p class="meta">The ETL has not run yet. Press <strong>Refresh data</strong>.</p>';
+                return;
+            }
+            const ok = pasos.filter((p) => p.estado === 'OK').length;
+            box.innerHTML = `
+                <p class="meta" style="margin-bottom:1rem"><strong>Last run:</strong> ${new Date(pasos[0].inicio).toLocaleString()} · <strong>${ok}/${pasos.length}</strong> operators OK.
+                Each KPI is an ETL operator: <strong>Extract</strong> (SQL on PostgreSQL) → <strong>Transform</strong> (calculation) → <strong>Load</strong> (document in MongoDB).</p>
+                <div class="table-wrap"><table class="compact">
+                    <thead><tr><th>Code</th><th>Operator</th><th>Source tables</th><th>Rows</th><th>Extract / Transform / Load</th><th>MongoDB collection</th><th>Status</th><th>Stored result</th></tr></thead>
+                    <tbody>${pasos.map((p) => `<tr>
+                        <td><strong>${p.codigo}</strong></td>
+                        <td>${escapeHtml(p.nombre)}</td>
+                        <td>${escapeHtml((p.fuente || []).join(', '))}</td>
+                        <td>${p.filas_extraidas ?? '—'}</td>
+                        <td>${p.ms_extract ?? '—'} / ${p.ms_transform ?? '—'} / ${p.ms_load ?? '—'} ms</td>
+                        <td>${escapeHtml(p.coleccion_destino)}</td>
+                        <td><span class="pill ${p.estado === 'OK' ? 'ok' : 'off'}">${p.estado}</span>${p.error ? `<br><small>${escapeHtml(p.error)}</small>` : ''}</td>
+                        <td>${documentos[p.codigo] ? `<details><summary>${escapeHtml(p.resultado_resumen || 'View')}</summary><pre class="json">${escapeHtml(JSON.stringify(documentos[p.codigo], null, 2))}</pre></details>` : escapeHtml(p.resultado_resumen || '—')}</td>
+                    </tr>`).join('')}</tbody>
+                </table></div>`;
+        }
+
+        function renderCatalogo(catalogo) {
+            const byRole = catalogo.reduce((acc, k) => { k.roles.forEach((r) => { acc[r] = (acc[r] || 0) + 1; }); return acc; }, {});
+            byId('tab-catalogo').innerHTML = `
+                <p class="meta" style="margin-bottom:.8rem">Documented KPI table: each role has at least 3 indicators.</p>
+                <div>${Object.entries(byRole).map(([role, count]) => `<span class="chip">${escapeHtml(role)}: ${count} KPIs</span>`).join('')}</div>
+                <div class="table-wrap"><table>
+                    <thead><tr><th>Role</th><th>Code</th><th>KPI</th><th>Definition</th><th>Formula</th><th>Source</th><th>Chart</th><th>ETL operator</th><th>MongoDB</th></tr></thead>
+                    <tbody>${catalogo.map((k) => `<tr>
+                        <td>${escapeHtml(k.roles.join(', '))}</td><td><strong>${k.codigo}</strong></td><td>${escapeHtml(k.nombre)}</td>
+                        <td>${escapeHtml(k.descripcion)}</td><td><code>${escapeHtml(k.formula)}</code></td><td>${escapeHtml(k.tablas.join(', '))}</td>
+                        <td>${escapeHtml(k.visual)}</td><td>${escapeHtml(k.operador)}</td><td>${escapeHtml(k.coleccion)}</td>
+                    </tr>`).join('')}</tbody>
+                </table></div>`;
+        }
+
+        async function showAnalyticsTab(tab) {
+            document.querySelectorAll('#analitica-tabs .tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
+            ['dashboard', 'etl', 'catalogo'].forEach((t) => byId(`tab-${t}`).classList.toggle('hidden', t !== tab));
+            showMessage(analyticsMessage, '');
+            if (tab !== 'dashboard') {
+                byId('analitica-rol').classList.add('hidden');
+                byId('analitica-updated').textContent = tab === 'etl'
+                    ? 'ETL process: one operator per KPI (PostgreSQL → MongoDB).'
+                    : 'Documentation of every KPI: role, definition, formula, source and destination.';
+            }
+            try {
+                if (tab === 'dashboard') renderDashboard(await apiRequest(`/analitica/kpis${analyticsRole ? `?rol=${encodeURIComponent(analyticsRole)}` : ''}`));
+                else if (tab === 'etl') renderEtl(await apiRequest('/analitica/etl-log'));
+                else renderCatalogo(await apiRequest('/analitica/catalogo'));
+            } catch (error) {
+                showMessage(analyticsMessage, error.message);
+            }
+        }
+
+        async function loadAnalitica() {
+            analyticsRole = null;
+            const canRefresh = can('/analitica', 'update');
+            byId('etl-button').classList.toggle('hidden', !canRefresh);
+            document.querySelector('#analitica-tabs [data-tab="etl"]').classList.toggle('hidden', !canRefresh);
+            await showAnalyticsTab('dashboard');
+        }
+
+        byId('analitica-tabs').addEventListener('click', (event) => {
+            const tab = event.target.closest('.tab');
+            if (tab) showAnalyticsTab(tab.dataset.tab);
+        });
+
+        byId('analitica-rol').addEventListener('change', (event) => {
+            analyticsRole = event.target.value;
+            showAnalyticsTab('dashboard');
+        });
+
+        byId('etl-button').addEventListener('click', async () => {
+            const button = byId('etl-button');
+            const current = document.querySelector('#analitica-tabs .tab.active').dataset.tab;
+            button.disabled = true;
+            showMessage(analyticsMessage, 'Running the ETL: extracting from PostgreSQL and loading MongoDB...', true);
+            try {
+                const summary = await apiRequest('/analitica/etl', { method: 'POST' });
+                await showAnalyticsTab(current);
+                showMessage(analyticsMessage, `ETL finished: ${summary.kpis_ok} KPIs loaded, ${summary.productos} products and ${summary.ventas} sales as documents${summary.errores ? `, ${summary.errores} errors` : ''}.`, summary.errores === 0);
+            } catch (error) {
+                showMessage(analyticsMessage, error.message);
+            } finally {
+                button.disabled = false;
+            }
+        });
+
+        // ==========================================
+        // INTEGRACION (PostgreSQL + Redis + MongoDB)
+        // ==========================================
+        async function loadIntegracion() {
+            const message = byId('integracion-message');
+            try {
+                const e = await apiRequest('/integracion/estado');
+                const cls = (s) => (s.conectado ? 'ok' : 'off');
+                const pill = (s) => `<span class="pill ${cls(s)}">${s.conectado ? 'Connected' : 'Offline'}</span>`;
+                const rows = (obj) => Object.entries(obj).map(([k, v]) => `<li><span>${escapeHtml(k)}</span><strong>${escapeHtml(v ?? '—')}</strong></li>`).join('');
+                const minutes = (seconds) => (seconds > 0 ? `${Math.floor(seconds / 60)} min` : '—');
+
+                byId('integracion-body').innerHTML = `
+                    <div class="flow">
+                        <div class="flow-box">Browser<small>Dashboard</small></div><span class="flow-arrow">⇄ HTTP + JWT ⇄</span>
+                        <div class="flow-box">Express API<small>Node.js</small></div><span class="flow-arrow">⇄ SQL + RLS ⇄</span>
+                        <div class="flow-box ${cls(e.postgres)}">PostgreSQL<small>transactions · roles · permissions</small></div>
+                        <span class="flow-arrow">ETL ▶</span>
+                        <div class="flow-box ${cls(e.mongo)}">MongoDB<small>KPI results · documents</small></div>
+                    </div>
+                    <div class="flow">
+                        <div class="flow-box">Login</div><span class="flow-arrow">creates session ▶</span>
+                        <div class="flow-box ${cls(e.redis)}">Redis<small>active sessions</small></div>
+                        <span class="flow-arrow">◀ validates session</span><div class="flow-box">Express API</div>
+                    </div>
+                    <div class="grid-2" style="margin-top:1.2rem">
+                        <div class="card"><div class="status-head"><h3>PostgreSQL</h3>${pill(e.postgres)}</div>
+                            <p class="meta">${escapeHtml(e.postgres.funcion || e.postgres.error || '')}</p>
+                            ${e.postgres.conectado ? `<ul class="stat-list">${rows({ Version: e.postgres.version, Database: e.postgres.base, Latency: `${e.postgres.ms} ms`, ...Object.fromEntries(Object.entries(e.postgres.tablas).map(([k, v]) => [`Rows in ${k}`, v])) })}</ul>` : ''}</div>
+                        <div class="card"><div class="status-head"><h3>Redis</h3>${pill(e.redis)}</div>
+                            <p class="meta">${escapeHtml(e.redis.funcion || e.redis.error || '')}</p>
+                            ${e.redis.conectado ? `<ul class="stat-list">${rows({ 'Active sessions (this business)': e.redis.sesiones_activas, 'Your session expires in': minutes(e.redis.ttl_sesion_actual_seg), Latency: `${e.redis.ms} ms` })}</ul>` : ''}</div>
+                        <div class="card"><div class="status-head"><h3>MongoDB</h3>${pill(e.mongo)}</div>
+                            <p class="meta">${escapeHtml(e.mongo.funcion || e.mongo.error || '')}</p>
+                            ${e.mongo.conectado ? `<ul class="stat-list">${rows({ Database: e.mongo.base, Latency: `${e.mongo.ms} ms`, 'Last ETL': e.mongo.ultimo_etl ? new Date(e.mongo.ultimo_etl).toLocaleString() : 'never', ...Object.fromEntries(Object.entries(e.mongo.colecciones).map(([k, v]) => [`Documents in ${k}`, v])) })}</ul>` : ''}</div>
+                    </div>`;
+                showMessage(message, '');
+            } catch (error) {
+                showMessage(message, error.message);
+            }
+        }
 
         // ==========================================
         // USERS
@@ -425,7 +944,6 @@
 
         async function loadUsers() {
             resetUserForm();
-            byId('sync-redis-button').classList.toggle('hidden', !can('/users', 'update'));
             try {
                 const perfiles = await apiRequest('/perfiles');
                 byId('profile_id').innerHTML = perfiles.map((p) => `<option value="${p.perfil_id}">${escapeHtml(p.nombre)}</option>`).join('');
@@ -469,19 +987,6 @@
         });
 
         byId('user-cancel').addEventListener('click', resetUserForm);
-
-        byId('sync-redis-button').addEventListener('click', async (event) => {
-            const button = event.currentTarget;
-            button.disabled = true;
-            try {
-                const result = await apiRequest('/sync-redis', { method: 'POST' });
-                showMessage(userMessage, `Synchronized: ${result.synced} active users. Omitted: ${result.skipped}.`, true);
-            } catch (error) {
-                showMessage(userMessage, error.message);
-            } finally {
-                button.disabled = false;
-            }
-        });
 
         byId('users-body').addEventListener('click', async (event) => {
             const button = event.target.closest('button');
@@ -701,7 +1206,8 @@
             }
         }
 
-        byId('logout-button').addEventListener('click', () => {
+        byId('logout-button').addEventListener('click', async () => {
+            try { await apiRequest('/logout', { method: 'POST' }); } catch (error) { /* la sesion ya expiro */ }
             localStorage.clear();
             window.location.href = 'index.html';
         });
