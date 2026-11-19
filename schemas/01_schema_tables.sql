@@ -1,5 +1,5 @@
 -- ==========================================
--- 01. CLEANUP & SCHEMA RECREATION
+-- 01. CLEANUP
 -- ==========================================
 DROP SCHEMA IF EXISTS app CASCADE;
 CREATE SCHEMA app;
@@ -33,6 +33,11 @@ CREATE TABLE app.perfiles (
     nombre VARCHAR(50) NOT NULL,
     descripcion TEXT,
     UNIQUE (tenant_id, nombre)
+);
+
+CREATE TABLE roles (
+    id_rol INT AUTO_INCREMENT PRIMARY KEY,
+    nombre_rol VARCHAR(100) NOT NULL UNIQUE
 );
 
 CREATE TABLE app.modulos (
@@ -101,7 +106,8 @@ CREATE TABLE app.productos (
     tenant_id INT NOT NULL REFERENCES app.tenants(tenant_id),
     sku VARCHAR(50),
     nombre VARCHAR(100) NOT NULL,
-    precio_base DECIMAL(10,2) NOT NULL,
+    precio DECIMAL(10,2) NOT NULL,
+    stock INT NOT NULL DEFAULT 0,
     categoria_id INT REFERENCES app.categorias(categoria_id),
     unidad_id INT REFERENCES app.unidades_medida(unidad_id),
     proveedor_id INT REFERENCES app.proveedores(proveedor_id)

@@ -3,6 +3,8 @@ const path = require('path');
 const express = require('express');
 const routes = require('./routes');
 const { pool } = require('./db');
+const { closeMongo } = require('./mongo');
+const { redisClient } = require('./cliente_redis');
 
 const app = express();
 const port = Number(process.env.PORT) || 3000;
@@ -31,13 +33,9 @@ app.get('/health', async (req, res) => {
 // 3. Unified Global Error Handler 
 app.use((err, req, res, next) => {
     console.error('❌ Backend Crash:', err.stack);
-    
-    // If Express already started sending the response, we must delegate to the default handler
     if (res.headersSent) {
         return next(err);
     }
-    
-    // Force a strict JSON response for any unhandled server errors
     return res.status(500).json({ 
         error: 'Internal Server Error', 
         details: err.message 
@@ -50,6 +48,12 @@ const server = app.listen(port, () => {
 
 function closeServer() {
     server.close(async () => {
+        try {
+            await closeMongo();
+            if (redisClient.isOpen) await redisClient.quit();
+        } catch (error) {
+            console.error('Error al cerrar conexiones:', error.message);
+        }
         await pool.end();
         process.exit(0);
     });
