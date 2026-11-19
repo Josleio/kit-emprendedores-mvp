@@ -26,22 +26,23 @@ async function seedDatabase() {
             await client.query(`ALTER TABLE app.${table} NO FORCE ROW LEVEL SECURITY`);
         }
 
-// ---------- Roles globales ----------
+        // ---------- Roles globales (idempotente, tenga o no UNIQUE en nombre) ----------
         const baseRoles = ['Administrador', 'Gerente', 'Cajero'];
-        const existingRoles = (await client.query('SELECT rol_id, nombre FROM app.roles')).rows;
-        const existingSet = new Set(existingRoles.map((r) => r.nombre.trim().toLowerCase()));
-
         for (const roleName of baseRoles) {
-            if (!existingSet.has(roleName.toLowerCase())) {
-                await client.query('INSERT INTO app.roles (nombre) VALUES ($1)', [roleName]);
-            }
+            await client.query(`
+                INSERT INTO app.roles (nombre)
+                SELECT $1
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM app.roles WHERE LOWER(TRIM(nombre)) = LOWER(TRIM($1))
+                )
+            `, [roleName]);
         }
 
         const rolesRows = (await client.query('SELECT rol_id, nombre FROM app.roles')).rows;
         const rolesMap = Object.fromEntries(
             rolesRows.map((r) => [r.nombre.trim().toLowerCase(), r.rol_id])
         );
-        
+
         // ---------- Tenant y perfiles ----------
         const tenantId = (await client.query(`
             INSERT INTO app.tenants (nombre, estado) VALUES ('Tienda Emprendedor MVP', 'activo') RETURNING tenant_id
