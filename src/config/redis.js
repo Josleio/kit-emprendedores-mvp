@@ -1,5 +1,11 @@
-// Redis = sesiones efimeras (un registro por sesion activa, con expiracion).
+// ============================================================================
+// REDIS = SESIONES EFIMERAS
+// ----------------------------------------------------------------------------
+// Un registro por sesion activa (session:{negocio}:{jti}) con expiracion automatica.
+// Toda la logica de uso esta en src/services/sesiones.js.
 // Si Redis esta apagado el sistema sigue funcionando solo con JWT y avisa una vez en consola.
+// ============================================================================
+require('dotenv').config();
 const { createClient } = require('redis');
 
 const redisClient = createClient({

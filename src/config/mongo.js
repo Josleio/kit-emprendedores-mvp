@@ -1,4 +1,11 @@
-// Conexion a MongoDB (mongoose). Se conecta solo cuando se necesita y falla rapido si el servicio esta apagado.
+// ============================================================================
+// MONGODB = RESULTADOS DE KPI, BITACORA DEL ETL Y DOCUMENTOS ANALITICOS
+// ----------------------------------------------------------------------------
+// Conexion con mongoose. Se conecta solo cuando se necesita (getMongo) y falla rapido
+// (3 s) si el servicio esta apagado: las rutas responden 503 en lugar de quedarse colgadas.
+// Devuelve el objeto "db" nativo del driver (db.collection('...')).
+// ============================================================================
+require('dotenv').config();
 const mongoose = require('mongoose');
 
 const uri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017';

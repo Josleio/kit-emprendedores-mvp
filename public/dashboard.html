@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kit Emprendedores - Dashboard</title>
+    <title>Kit Emprendedores - Workspace</title>
     <style>
         :root {
             color-scheme: light;
@@ -24,7 +24,6 @@
         * { box-sizing: border-box; }
         body { margin: 0; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-        /* ---------- Barra superior ---------- */
         .topbar {
             background: linear-gradient(135deg, var(--blue), #0a74da);
             color: #fff; padding: .85rem 2rem;
@@ -32,23 +31,20 @@
             box-shadow: 0 2px 10px rgba(0, 86, 179, .25);
             position: sticky; top: 0; z-index: 10;
         }
-        .brand { display: flex; align-items: center; gap: .7rem; font-size: 1.2rem; font-weight: 700; letter-spacing: .2px; }
+        .brand { display: flex; align-items: center; gap: .7rem; font-size: 1.2rem; font-weight: 700; }
         .brand-mark { width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,.2); display: grid; place-items: center; font-weight: 800; }
         .topbar-right { display: flex; align-items: center; gap: 1rem; }
         .user-chip { display: flex; align-items: center; gap: .6rem; }
         .avatar { width: 36px; height: 36px; border-radius: 50%; background: #fff; color: var(--blue); display: grid; place-items: center; font-weight: 700; }
         .user-info { display: flex; flex-direction: column; line-height: 1.2; }
-        .user-info small { opacity: .85; }
+        .user-info small { opacity: .9; }
 
-        /* ---------- Layout ---------- */
-        .layout { display: grid; grid-template-columns: 250px 1fr; gap: 1.5rem; max-width: 1280px; margin: 0 auto; padding: 1.5rem 2rem 3rem; align-items: start; }
+        .layout { display: grid; grid-template-columns: 250px 1fr; gap: 1.5rem; max-width: 1320px; margin: 0 auto; padding: 1.5rem 2rem 3rem; align-items: start; }
         .sidebar { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.1rem; position: sticky; top: 84px; }
         .sidebar-title { margin: 0 0 .6rem; font-size: .72rem; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
         .content { min-width: 0; }
 
-        /* ---------- Botones ---------- */
-        button { border: 0; border-radius: 8px; cursor: pointer; padding: .6rem 1.05rem; font-weight: 600; font-size: .92rem; font-family: inherit; transition: background .2s, transform .1s, box-shadow .2s; }
-        button:active { transform: translateY(1px); }
+        button { border: 0; border-radius: 8px; cursor: pointer; padding: .58rem 1rem; font-weight: 600; font-size: .9rem; font-family: inherit; transition: background .2s; }
         button:disabled { opacity: .6; cursor: not-allowed; }
         .primary { background: var(--blue); color: #fff; }
         .primary:hover { background: var(--blue-dark); }
@@ -59,110 +55,57 @@
         .logout-btn { background: rgba(255,255,255,.16); color: #fff; }
         .logout-btn:hover { background: rgba(255,255,255,.28); }
 
-        /* ---------- Paneles ---------- */
-        .panel { background: var(--card); padding: 1.6rem; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 1.5rem; }
-        .panel-head { margin-bottom: 1.2rem; }
+        .panel { background: var(--card); padding: 1.5rem; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 1.5rem; }
+        .panel-head { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.2rem; }
         .panel-head h2 { margin: 0; font-size: 1.35rem; }
-        .meta { color: var(--muted); margin: .3rem 0 0; font-size: .92rem; }
+        .meta { color: var(--muted); margin: .25rem 0 0; font-size: .9rem; }
 
-        /* ---------- Formularios ---------- */
         form { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 1.1rem; margin-bottom: 1.2rem; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1rem; }
-        label { display: block; margin: 0 0 .35rem; font-weight: 600; font-size: .88rem; color: #3e4c59; }
-        input, select { width: 100%; padding: .65rem .8rem; border: 1px solid #cbd5df; border-radius: 8px; font-size: .95rem; font-family: inherit; background: #fff; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .9rem; }
+        label { display: block; margin: 0 0 .3rem; font-weight: 600; font-size: .86rem; color: #3e4c59; }
+        input, select { width: 100%; padding: .6rem .75rem; border: 1px solid #cbd5df; border-radius: 8px; font-size: .92rem; font-family: inherit; background: #fff; }
         input:focus, select:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0, 86, 179, .15); }
         input[type="checkbox"] { width: auto; accent-color: var(--blue); }
-        .inline-check { display: flex; align-items: center; gap: .5rem; font-weight: 500; margin: 0; }
-        .form-actions { display: flex; gap: .6rem; margin-top: 1rem; }
-        .toolbar { max-width: 360px; }
+        .inline-check { display: flex; align-items: center; gap: .45rem; font-weight: 500; margin: 0; }
+        .form-actions { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: 1rem; }
 
-        /* ---------- Tablas ---------- */
         .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
         table { width: 100%; border-collapse: collapse; }
-        th { background: #f1f5f9; color: #52606d; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; }
-        th, td { text-align: left; padding: .8rem 1rem; border-bottom: 1px solid var(--border); }
+        th { background: #f1f5f9; color: #52606d; font-size: .76rem; text-transform: uppercase; letter-spacing: .05em; }
+        th, td { text-align: left; padding: .72rem .9rem; border-bottom: 1px solid var(--border); font-size: .9rem; }
         tbody tr:last-child td { border-bottom: 0; }
         tbody tr:hover { background: #f8fbff; }
-        table.compact th, table.compact td { padding: .55rem .7rem; font-size: .84rem; }
-        td.empty { text-align: center; color: var(--muted); padding: 1.6rem; }
-        .actions { display: flex; gap: .4rem; flex-wrap: wrap; }
-        td.actions { display: table-cell; white-space: nowrap; }
-        td.actions button { margin-right: .35rem; }
-        .pill { display: inline-block; padding: .15rem .65rem; border-radius: 999px; font-size: .78rem; font-weight: 600; }
+        td.empty { text-align: center; color: var(--muted); padding: 1.4rem; }
+        td.actions { white-space: nowrap; }
+        td.actions button { margin-right: .3rem; padding: .4rem .7rem; font-size: .82rem; }
+
+        .pill { display: inline-block; padding: .15rem .6rem; border-radius: 999px; font-size: .76rem; font-weight: 600; }
         .pill.ok { background: #e3f6ea; color: var(--ok); }
         .pill.off { background: #eceff1; color: #697586; }
 
-        /* ---------- Mensajes ---------- */
-        .message { margin: 0 0 1rem; padding: .7rem 1rem; border-radius: 8px; background: #fdecea; color: #8a1c1c; font-size: .92rem; }
+        .message { margin: 0 0 1rem; padding: .7rem 1rem; border-radius: 8px; background: #fdecea; color: #8a1c1c; font-size: .9rem; }
         .message:empty { display: none; }
         .message.success { background: #e3f6ea; color: var(--ok); }
         .hidden { display: none !important; }
 
-        /* ---------- Menu lateral y arboles ---------- */
         .tree, .tree ul { list-style: none; margin: 0; padding-left: 0; }
-        .tree ul { padding-left: .9rem; margin-left: .35rem; border-left: 2px solid var(--border); }
-        .tree summary { cursor: pointer; font-weight: 700; padding: .5rem .3rem; color: #3e4c59; border-radius: 6px; }
-        .tree summary:hover { background: #f1f5f9; }
-        button.menu-item { display: flex; align-items: center; gap: .6rem; width: 100%; text-align: left; background: transparent; color: #3e4c59; padding: .6rem .8rem; margin: .1rem 0; border-radius: 8px; }
+        .tree ul { padding-left: .85rem; margin-left: .3rem; border-left: 2px solid var(--border); }
+        .tree summary { cursor: pointer; font-weight: 700; padding: .45rem .3rem; color: #3e4c59; border-radius: 6px; }
+        button.menu-item { display: flex; align-items: center; gap: .55rem; width: 100%; text-align: left; background: transparent; color: #3e4c59; padding: .55rem .75rem; margin: .1rem 0; border-radius: 8px; }
         button.menu-item:hover { background: var(--blue-soft); color: var(--blue); }
         button.menu-item.active { background: var(--blue-soft); color: var(--blue); box-shadow: inset 3px 0 0 var(--blue); }
 
-        /* ---------- Permisos ---------- */
-        .tree li.node-row { display: flex; justify-content: space-between; align-items: center; gap: .8rem; flex-wrap: wrap; background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: .65rem .9rem; margin: .45rem 0; }
-        .node-row small { color: var(--muted); margin-left: .5rem; }
-        .checks { display: flex; gap: .6rem; flex-wrap: wrap; }
-        .checks .inline-check { background: #fff; border: 1px solid var(--border); border-radius: 999px; padding: .25rem .75rem; font-size: .85rem; }
-        .badge { background: #e3f6ea; color: var(--ok); border-radius: 999px; padding: .1rem .55rem; font-size: .72rem; font-weight: 700; margin-left: .5rem; }
+        .tree li.node-row { display: flex; justify-content: space-between; align-items: center; gap: .8rem; flex-wrap: wrap; background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: .6rem .85rem; margin: .4rem 0; }
+        .checks { display: flex; gap: .5rem; flex-wrap: wrap; }
+        .checks .inline-check { background: #fff; border: 1px solid var(--border); border-radius: 999px; padding: .2rem .65rem; font-size: .82rem; }
+        .badge { background: #e3f6ea; color: var(--ok); border-radius: 999px; padding: .1rem .5rem; font-size: .72rem; font-weight: 700; margin-left: .4rem; }
 
-
-        /* ---------- Analitica, ventas y graficos ---------- */
-        .toolbar-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1rem; margin-bottom: 1.4rem; }
-        .kpi { background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: .2rem; }
-        .kpi-label { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; }
-        .kpi-value { font-size: 1.55rem; color: var(--blue); }
-        .kpi.good .kpi-value { color: var(--ok); }
-        .kpi.bad .kpi-value { color: var(--danger); }
-        .kpi small { color: var(--muted); }
-        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.2rem; margin-bottom: 1.2rem; }
-        .card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem; min-width: 0; }
-        .card h3 { margin: 0 0 .9rem; font-size: 1rem; }
-        .bars { display: flex; flex-direction: column; gap: .6rem; }
-        .bar-row { display: grid; grid-template-columns: minmax(80px, 34%) 1fr auto; gap: .6rem; align-items: center; font-size: .88rem; }
-        .bar-track { background: #eef2f6; border-radius: 999px; height: 10px; overflow: hidden; }
-        .bar-fill { background: linear-gradient(90deg, var(--blue), #0a74da); height: 100%; border-radius: 999px; }
-        svg.chart { width: 100%; height: auto; display: block; }
-        .pill.warn { background: #fff4e0; color: #9a5b00; }
-        .cart-total { text-align: right; font-size: 1.25rem; font-weight: 700; margin-top: .8rem; }
-        .detail-row td { background: #f8fafc; color: var(--muted); font-size: .9rem; }
-        .small-input { max-width: 110px; }
-
-
-        /* ---------- Pestanas, JSON y diagrama de integracion ---------- */
-        .tabs { display: flex; gap: .4rem; margin-bottom: 1.2rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
-        .tab { background: transparent; color: var(--muted); border-radius: 8px 8px 0 0; padding: .6rem 1.1rem; }
-        .tab:hover { background: #f1f5f9; }
-        .tab.active { color: var(--blue); background: var(--blue-soft); box-shadow: inset 0 -3px 0 var(--blue); }
-        pre.json { background: #0f172a; color: #e2e8f0; border-radius: 8px; padding: .8rem; overflow: auto; font-size: .78rem; max-height: 260px; margin: .5rem 0 0; }
-        details summary { cursor: pointer; color: var(--blue); font-weight: 600; }
-        .flow { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .7rem; margin: .8rem 0; }
-        .flow-box { background: #fff; border: 2px solid var(--blue); border-radius: 12px; padding: .7rem 1rem; text-align: center; min-width: 120px; font-weight: 700; }
-        .flow-box small { display: block; font-weight: 400; color: var(--muted); }
-        .flow-box.ok { border-color: var(--ok); }
-        .flow-box.off { border-color: var(--danger); }
-        .flow-arrow { color: var(--blue); font-weight: 700; font-size: .85rem; text-align: center; }
-        .stat-list { list-style: none; margin: .6rem 0 0; padding: 0; }
-        .stat-list li { display: flex; justify-content: space-between; padding: .35rem 0; border-bottom: 1px solid var(--border); font-size: .9rem; }
-        .stat-list li:last-child { border-bottom: 0; }
-        .status-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: .4rem; }
-        .status-head h3 { margin: 0; }
-        .chip { display: inline-block; background: var(--blue-soft); color: var(--blue); border-radius: 999px; padding: .15rem .7rem; font-size: .8rem; font-weight: 700; margin: 0 .4rem .4rem 0; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+        pre.json-box { background: #102a43; color: #f0f4f8; padding: 1rem; border-radius: 10px; overflow-x: auto; font-size: .82rem; margin-top: 1rem; }
 
         @media (max-width: 860px) {
             .layout { grid-template-columns: 1fr; padding: 1rem; }
             .sidebar { position: static; }
-            .topbar { padding: .8rem 1rem; }
-            .user-info { display: none; }
         }
     </style>
 </head>
@@ -172,162 +115,224 @@
         <div class="topbar-right">
             <div class="user-chip">
                 <span class="avatar" id="user-avatar">U</span>
-                <span class="user-info"><strong id="user-name">User</strong><small id="profile-display">Loading...</small></span>
+                <span class="user-info"><strong id="user-name">Usuario</strong><small id="profile-display">Cargando...</small></span>
             </div>
-            <button class="logout-btn" id="logout-button">Log out</button>
+            <button class="logout-btn" id="logout-button">Cerrar sesion</button>
         </div>
     </header>
 
     <div class="layout">
         <aside class="sidebar">
-            <p class="sidebar-title">Menu</p>
-            <nav id="menu" aria-label="Authorized modules"></nav>
+            <p class="sidebar-title">Modulos autorizados</p>
+            <nav id="menu"></nav>
         </aside>
 
         <main class="content">
             <p class="message" id="workspace-message"></p>
 
-            <!-- VENTAS -->
-            <section class="panel hidden" id="ventas-container">
-                <div class="panel-head"><h2>Sales</h2><p class="meta">Register a sale: stock is discounted automatically and the price is saved as charged.</p></div>
-                <form id="venta-form">
-                    <div class="form-grid">
-                        <div><label for="venta-cliente">Customer</label><select id="venta-cliente"></select></div>
-                        <div><label for="venta-metodo">Payment method</label><select id="venta-metodo" required></select></div>
+            <!-- ANALITICA & BI (MongoDB + ETL) -->
+            <section class="panel hidden" id="analitica-container">
+                <div class="panel-head">
+                    <div>
+                        <h2>Dashboard Analitico (MongoDB)</h2>
+                        <p class="meta" id="kpi-role-subtitle">Indicadores calculados por el proceso ETL.</p>
                     </div>
-                    <div class="form-grid" style="margin-top:1rem">
-                        <div><label for="venta-producto">Product</label><select id="venta-producto"></select></div>
-                        <div><label for="venta-cantidad">Quantity</label><input id="venta-cantidad" type="number" min="1" step="1" value="1"></div>
-                        <div style="align-self:end"><button class="secondary" type="button" id="venta-add">Add to sale</button></div>
+                    <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
+                        <select id="kpi-role-select" class="hidden" style="width:auto"></select>
+                        <button class="primary" type="button" id="btn-run-etl">Refresh data (Ejecutar ETL)</button>
                     </div>
-                    <div class="table-wrap" style="margin-top:1rem">
+                </div>
+                <div class="form-actions" style="margin-top:0;margin-bottom:1rem">
+                    <button class="secondary" type="button" data-analitica-tab="kpis">KPIs del Rol</button>
+                    <button class="secondary" type="button" data-analitica-tab="catalogo">Catalogo y Formulas (14 KPIs)</button>
+                    <button class="secondary" type="button" id="tab-etl-log" data-analitica-tab="log">Bitacora ETL (etl_log)</button>
+                </div>
+                <p class="message" id="analitica-message"></p>
+
+                <div data-analitica-pane="kpis">
+                    <div class="kpi-grid" id="kpi-cards-grid"></div>
+                </div>
+
+                <div class="hidden" data-analitica-pane="catalogo">
+                    <div class="table-wrap">
                         <table>
-                            <thead><tr><th>Product</th><th>Price</th><th>Qty</th><th>Subtotal</th><th></th></tr></thead>
-                            <tbody id="cart-body"></tbody>
+                            <thead><tr><th>Codigo</th><th>Indicador</th><th>Roles</th><th>Formula</th><th>Tablas PostgreSQL</th><th>Operador</th></tr></thead>
+                            <tbody id="kpi-catalogo-body"></tbody>
                         </table>
                     </div>
-                    <div class="cart-total">Total: <span id="cart-total">0.00</span></div>
-                    <div class="form-actions">
-                        <button class="primary" type="submit">Register sale</button>
-                        <button class="secondary" type="button" id="venta-clear">Clear</button>
+                </div>
+
+                <div class="hidden" data-analitica-pane="log">
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Paso</th><th>Proceso / Operador</th><th>Fuente</th><th>Destino</th><th>Filas</th><th>Resultado</th><th>Tiempos</th><th>Estado</th></tr></thead>
+                            <tbody id="etl-log-body"></tbody>
+                        </table>
                     </div>
+                    <pre class="json-box hidden" id="mongo-doc-preview"></pre>
+                </div>
+            </section>
+
+            <!-- INTEGRACION 3 BASES DE DATOS -->
+            <section class="panel hidden" id="integracion-container">
+                <div class="panel-head">
+                    <div>
+                        <h2>Arquitectura Poliglota en Vivo</h2>
+                        <p class="meta">Estado en tiempo real de PostgreSQL (RLS), Redis (Sesiones) y MongoDB (ETL/BI).</p>
+                    </div>
+                    <button class="secondary" type="button" id="btn-refresh-integracion">Actualizar estado</button>
+                </div>
+                <div class="kpi-grid" id="integracion-grid"></div>
+            </section>
+
+            <!-- VENTAS -->
+            <section class="panel hidden" id="ventas-container">
+                <div class="panel-head">
+                    <div><h2>Ventas (Inmutables en PostgreSQL)</h2><p class="meta">Registra ventas con descuento transaccional de stock o anula ventas existentes.</p></div>
+                </div>
+                <form id="venta-form">
+                    <div class="form-grid">
+                        <div><label for="venta-cliente">Cliente (opcional)</label><select id="venta-cliente"></select></div>
+                        <div><label for="venta-metodo">Metodo de pago</label><select id="venta-metodo" required></select></div>
+                        <div><label for="venta-producto">Producto</label><select id="venta-producto"></select></div>
+                        <div><label for="venta-cantidad">Cantidad</label><input id="venta-cantidad" type="number" min="1" value="1"></div>
+                    </div>
+                    <div class="form-actions">
+                        <button class="secondary" type="button" id="venta-add-item">+ Agregar producto al carrito</button>
+                        <button class="primary" type="submit">Registrar Venta</button>
+                    </div>
+                    <div id="venta-cart-preview" style="margin-top:.8rem;font-size:.9rem;color:#3e4c59"></div>
                 </form>
-                <p class="message" id="venta-message"></p>
-                <h3 style="margin:1.4rem 0 .8rem">Recent sales</h3>
+                <p class="message" id="ventas-message"></p>
                 <div class="table-wrap">
                     <table>
-                        <thead><tr><th>#</th><th>Date</th><th>Customer</th><th>Units</th><th>Total</th><th>Profit</th><th>Status</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>#</th><th>Fecha</th><th>Cliente</th><th>Unidades</th><th>Total</th><th>Utilidad</th><th>Estado</th><th>Acciones</th></tr></thead>
                         <tbody id="ventas-body"></tbody>
                     </table>
                 </div>
             </section>
 
-            <!-- CRUD genericos: se construyen desde CRUD_SCREENS en el script -->
-            <section class="panel hidden" id="catalog-container"></section>
-            <section class="panel hidden" id="clientes-container"></section>
-            <section class="panel hidden" id="categorias-container"></section>
-            <section class="panel hidden" id="proveedores-container"></section>
-
-            <!-- ANALITICA: dashboard de KPI por rol, proceso ETL y tabla de KPI -->
-            <section class="panel hidden" id="analitica-container">
-                <div class="toolbar-row">
-                    <div class="panel-head" style="margin:0">
-                        <h2>KPI Dashboard</h2>
-                        <p class="meta" id="analitica-updated">Indicators calculated from PostgreSQL and stored in MongoDB.</p>
+            <!-- CATALOGO PRODUCTOS -->
+            <section class="panel hidden" id="catalog-container">
+                <div class="panel-head"><div><h2>Catalogo de Productos</h2><p class="meta">Inventario y costos base que alimentan los KPIs de margen, ROI y valorizacion.</p></div></div>
+                <form id="product-form">
+                    <div class="form-grid">
+                        <div><label for="product-nombre">Nombre</label><input id="product-nombre" maxlength="100" required></div>
+                        <div><label for="product-precio">Precio Venta</label><input id="product-precio" type="number" min="0" step="0.01" required></div>
+                        <div><label for="product-costo">Costo Unitario</label><input id="product-costo" type="number" min="0" step="0.01" value="0" required></div>
+                        <div><label for="product-stock">Stock</label><input id="product-stock" type="number" min="0" step="1" value="0" required></div>
+                        <div><label for="product-ref">Ref. Almacen</label><input id="product-ref" maxlength="45"></div>
+                        <div><label for="product-cat">Categoria</label><select id="product-cat"></select></div>
+                        <div><label for="product-prov">Proveedor</label><select id="product-prov"></select></div>
+                        <div><label for="product-und">Unidad</label><select id="product-und"></select></div>
                     </div>
-                    <div class="actions">
-                        <select id="analitica-rol" class="hidden" style="width:auto"></select>
-                        <button class="primary hidden" id="etl-button">Refresh data</button>
+                    <div class="form-actions">
+                        <button class="primary" type="submit" id="product-submit">Guardar producto</button>
+                        <button class="secondary hidden" type="button" id="product-cancel">Cancelar</button>
                     </div>
+                </form>
+                <p class="message" id="catalog-message"></p>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Producto</th><th>Categoria</th><th>Precio</th><th>Costo</th><th>Stock</th><th>Acciones</th></tr></thead>
+                        <tbody id="catalog-body"></tbody>
+                    </table>
                 </div>
-                <div class="tabs" id="analitica-tabs">
-                    <button class="tab active" data-tab="dashboard">Dashboard</button>
-                    <button class="tab" data-tab="etl">ETL process</button>
-                    <button class="tab" data-tab="catalogo">KPI table</button>
-                </div>
-                <p class="message" id="analitica-message"></p>
-                <div id="tab-dashboard"></div>
-                <div id="tab-etl" class="hidden"></div>
-                <div id="tab-catalogo" class="hidden"></div>
             </section>
 
-            <!-- INTEGRACION -->
-            <section class="panel hidden" id="integracion-container">
-                <div class="panel-head"><h2>Integration</h2><p class="meta">How PostgreSQL, Redis and MongoDB work together in this solution (live status).</p></div>
-                <p class="message" id="integracion-message"></p>
-                <div id="integracion-body"></div>
+            <!-- CLIENTES -->
+            <section class="panel hidden" id="clientes-container">
+                <div class="panel-head"><div><h2>Clientes</h2><p class="meta">Directorio de clientes del negocio.</p></div></div>
+                <form id="cliente-form">
+                    <div class="form-grid">
+                        <div><label for="cliente-nombre">Nombre completo</label><input id="cliente-nombre" maxlength="100" required></div>
+                        <div><label for="cliente-tel">Telefono</label><input id="cliente-tel" maxlength="20"></div>
+                    </div>
+                    <div class="form-actions"><button class="primary" type="submit">Agregar cliente</button></div>
+                </form>
+                <p class="message" id="clientes-message"></p>
+                <div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Telefono</th><th>Acciones</th></tr></thead><tbody id="clientes-body"></tbody></table></div>
+            </section>
+
+            <!-- CATEGORIAS -->
+            <section class="panel hidden" id="categorias-container">
+                <div class="panel-head"><div><h2>Categorias</h2><p class="meta">Clasificacion de productos para K08 (Participacion por categoria).</p></div></div>
+                <form id="categoria-form">
+                    <div class="form-grid"><div><label for="categoria-nombre">Nombre</label><input id="categoria-nombre" maxlength="45" required></div></div>
+                    <div class="form-actions"><button class="primary" type="submit">Agregar categoria</button></div>
+                </form>
+                <p class="message" id="categorias-message"></p>
+                <div class="table-wrap"><table><thead><tr><th>Categoria</th><th>Acciones</th></tr></thead><tbody id="categorias-body"></tbody></table></div>
+            </section>
+
+            <!-- PROVEEDORES -->
+            <section class="panel hidden" id="proveedores-container">
+                <div class="panel-head"><div><h2>Proveedores</h2><p class="meta">Proveedores asociados al catalogo.</p></div></div>
+                <form id="proveedor-form">
+                    <div class="form-grid">
+                        <div><label for="proveedor-nombre">Nombre</label><input id="proveedor-nombre" maxlength="100" required></div>
+                        <div><label for="proveedor-tel">Telefono</label><input id="proveedor-tel" maxlength="20"></div>
+                    </div>
+                    <div class="form-actions"><button class="primary" type="submit">Agregar proveedor</button></div>
+                </form>
+                <p class="message" id="proveedores-message"></p>
+                <div class="table-wrap"><table><thead><tr><th>Proveedor</th><th>Telefono</th><th>Acciones</th></tr></thead><tbody id="proveedores-body"></tbody></table></div>
             </section>
 
             <!-- USERS -->
             <section class="panel hidden" id="users-container">
-                <div class="panel-head"><h2>User management</h2><p class="meta">Create users and choose the profile that defines what they can do.</p></div>
+                <div class="panel-head"><div><h2>Gestion de Usuarios</h2><p class="meta">Contrasenas cifradas con bcrypt y aislamiento por tenant_id.</p></div></div>
                 <form id="create-user-form">
                     <div class="form-grid">
-                        <div><label for="username">Username</label><input id="username" name="username" maxlength="50" required></div>
-                        <div><label for="password">Password <span id="password-hint" class="meta"></span></label><input id="password" name="password" type="password" minlength="4" required></div>
-                        <div><label for="profile_id">Profile</label><select id="profile_id" name="profile_id" required></select></div>
+                        <div><label for="username">Usuario</label><input id="username" name="username" maxlength="50" required></div>
+                        <div><label for="password">Contrasena <span id="password-hint" class="meta"></span></label><input id="password" name="password" type="password" minlength="4" required></div>
+                        <div><label for="profile_id">Perfil</label><select id="profile_id" name="profile_id" required></select></div>
                     </div>
-                    <label class="inline-check hidden" id="user-active-row" style="margin-top:1rem"><input type="checkbox" id="user-active" checked> Active</label>
+                    <label class="inline-check hidden" id="user-active-row" style="margin-top:.8rem"><input type="checkbox" id="user-active" checked> Activo</label>
                     <div class="form-actions">
-                        <button class="primary" type="submit" id="user-submit">Create user</button>
-                        <button class="secondary hidden" type="button" id="user-cancel">Cancel</button>
+                        <button class="primary" type="submit" id="user-submit">Crear usuario</button>
+                        <button class="secondary hidden" type="button" id="user-cancel">Cancelar</button>
                     </div>
                 </form>
                 <p class="message" id="user-message"></p>
-                <div class="table-wrap">
-                    <table>
-                        <thead><tr><th>Username</th><th>Profile</th><th>Status</th><th>Actions</th></tr></thead>
-                        <tbody id="users-body"></tbody>
-                    </table>
-                </div>
+                <div class="table-wrap"><table><thead><tr><th>Usuario</th><th>Perfil</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="users-body"></tbody></table></div>
             </section>
 
             <!-- PERFILES -->
             <section class="panel hidden" id="perfiles-container">
-                <div class="panel-head"><h2>Profiles (roles)</h2><p class="meta">Each profile groups the permissions that its users will have.</p></div>
+                <div class="panel-head"><div><h2>Perfiles y Roles</h2><p class="meta">El Rol define el Dashboard KPI; el Perfil define las pantallas permitidas.</p></div></div>
                 <form id="perfil-form">
                     <div class="form-grid">
-                        <div><label for="perfil-nombre">Name</label><input id="perfil-nombre" maxlength="50" required></div>
-                        <div><label for="perfil-descripcion">Description</label><input id="perfil-descripcion" maxlength="200"></div>
+                        <div><label for="perfil-nombre">Nombre del Perfil</label><input id="perfil-nombre" maxlength="50" required></div>
+                        <div><label for="perfil-rol">Rol Analitico</label><select id="perfil-rol" required></select></div>
+                        <div><label for="perfil-descripcion">Descripcion</label><input id="perfil-descripcion" maxlength="200"></div>
                     </div>
                     <div class="form-actions">
-                        <button class="primary" type="submit" id="perfil-submit">Create profile</button>
-                        <button class="secondary hidden" type="button" id="perfil-cancel">Cancel</button>
+                        <button class="primary" type="submit" id="perfil-submit">Crear perfil</button>
+                        <button class="secondary hidden" type="button" id="perfil-cancel">Cancelar</button>
                     </div>
                 </form>
                 <p class="message" id="perfil-message"></p>
-                <div class="table-wrap">
-                    <table>
-                        <thead><tr><th>Name</th><th>Description</th><th>Actions</th></tr></thead>
-                        <tbody id="perfiles-body"></tbody>
-                    </table>
-                </div>
+                <div class="table-wrap"><table><thead><tr><th>Perfil</th><th>Rol KPI</th><th>Descripcion</th><th>Acciones</th></tr></thead><tbody id="perfiles-body"></tbody></table></div>
             </section>
 
             <!-- PERMISOS -->
             <section class="panel hidden" id="permisos-container">
-                <div class="panel-head">
-                    <h2>Permissions</h2>
-                    <p class="meta">A screen without an assignment is not accessible to the profile. Containers appear automatically when they have an accessible child.</p>
-                </div>
-                <div class="toolbar">
-                    <label for="permiso-perfil">Profile</label>
-                    <select id="permiso-perfil"></select>
-                </div>
-                <p class="message" id="permiso-message" style="margin-top:1rem"></p>
-                <nav aria-label="Permissions by node" id="permisos-tree"></nav>
+                <div class="panel-head"><div><h2>Matriz de Permisos RBAC</h2><p class="meta">Control de acceso aplicado tanto en API como mediante politicas RLS en PostgreSQL.</p></div></div>
+                <div style="max-width:360px"><label for="permiso-perfil">Seleccionar Perfil</label><select id="permiso-perfil"></select></div>
+                <p class="message" id="permiso-message" style="margin-top:.8rem"></p>
+                <nav id="permisos-tree"></nav>
             </section>
         </main>
     </div>
 
+    <script src="js/dashboard-kpi.js"></script>
     <script>
         const token = localStorage.getItem('token');
         const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
         const byId = (id) => document.getElementById(id);
 
-        if (!token) {
-            window.location.href = 'index.html';
-        }
+        if (!token) window.location.href = 'index.html';
 
         async function apiRequest(path, options = {}) {
             const response = await fetch(`/api${path}`, {
@@ -337,10 +342,10 @@
             if (response.status === 401) {
                 localStorage.clear();
                 window.location.href = 'index.html';
-                throw new Error('Session expired');
+                throw new Error('Sesion expirada');
             }
             const data = response.status === 204 ? null : await response.json();
-            if (!response.ok) throw new Error(data?.error || 'Request failed');
+            if (!response.ok) throw new Error(data?.error || 'Error en la solicitud');
             return data;
         }
 
@@ -350,12 +355,10 @@
         }
 
         function escapeHtml(value) {
-            return String(value ?? '').replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
+            return String(value ?? '').replace(/[&<>'"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[c]));
         }
 
-        const emptyRow = (columns, text) => `<tr><td class="empty" colspan="${columns}">${text}</td></tr>`;
-
-        // access: ruta -> acciones permitidas al perfil (viene de /menu)
+        const emptyRow = (cols, text) => `<tr><td class="empty" colspan="${cols}">${text}</td></tr>`;
         let access = {};
         const can = (ruta, action) => Boolean(access[ruta] && access[ruta][action]);
 
@@ -369,17 +372,17 @@
             return groups;
         }
 
-        // ==========================================
-        // MENU Y NAVEGACION
-        // ==========================================
+        const helpers = { apiRequest, showMessage, escapeHtml, can };
+        if (window.DashboardKpi) window.DashboardKpi.init(helpers);
+
         const SCREENS = {
+            '/analitica':   { el: 'analitica-container',   icon: '📊', load: () => window.DashboardKpi.load(helpers) },
+            '/integracion': { el: 'integracion-container', icon: '🔌', load: () => loadIntegracion() },
             '/ventas':      { el: 'ventas-container',      icon: '🧾', load: () => loadVentas() },
-            '/clientes':    { el: 'clientes-container',    icon: '🙋', load: () => loadCrud('/clientes') },
-            '/catalog':     { el: 'catalog-container',     icon: '🛍️', load: () => loadCrud('/catalog') },
-            '/categorias':  { el: 'categorias-container',  icon: '🏷️', load: () => loadCrud('/categorias') },
-            '/proveedores': { el: 'proveedores-container', icon: '🚚', load: () => loadCrud('/proveedores') },
-            '/analitica':   { el: 'analitica-container',   icon: '📊', load: () => loadAnalitica() },
-            '/integracion': { el: 'integracion-container', icon: '🔗', load: () => loadIntegracion() },
+            '/catalog':     { el: 'catalog-container',     icon: '📦', load: () => loadCatalog() },
+            '/clientes':    { el: 'clientes-container',    icon: '🤝', load: () => loadSimpleMaster('/clientes', 'clientes-body', 'cliente_id', ['nombre_completo', 'telefono']) },
+            '/categorias':  { el: 'categorias-container',  icon: '🏷️', load: () => loadSimpleMaster('/categorias', 'categorias-body', 'categoria_id', ['nombre']) },
+            '/proveedores': { el: 'proveedores-container', icon: '🚚', load: () => loadSimpleMaster('/proveedores', 'proveedores-body', 'proveedor_id', ['nombre', 'telefono']) },
             '/users':       { el: 'users-container',       icon: '👤', load: () => loadUsers() },
             '/perfiles':    { el: 'perfiles-container',    icon: '🪪', load: () => loadPerfiles() },
             '/permisos':    { el: 'permisos-container',    icon: '🔐', load: () => loadPermisos() },
@@ -399,815 +402,468 @@
         }
 
         async function showScreen(ruta) {
-            const workspaceMessage = byId('workspace-message');
-            Object.values(SCREENS).forEach((screen) => byId(screen.el).classList.add('hidden'));
-            document.querySelectorAll('button.menu-item').forEach((button) => button.classList.toggle('active', button.dataset.ruta === ruta));
+            Object.values(SCREENS).forEach((s) => byId(s.el).classList.add('hidden'));
+            document.querySelectorAll('button.menu-item').forEach((b) => b.classList.toggle('active', b.dataset.ruta === ruta));
             const screen = SCREENS[ruta];
-            if (!screen) {
-                showMessage(workspaceMessage, 'This module does not have a screen yet.');
-                return;
-            }
-            showMessage(workspaceMessage, '');
+            if (!screen) return showMessage(byId('workspace-message'), 'Pantalla no configurada.');
+            showMessage(byId('workspace-message'), '');
             byId(screen.el).classList.remove('hidden');
             await screen.load();
         }
 
-        byId('menu').addEventListener('click', (event) => {
-            const button = event.target.closest('button.menu-item');
-            if (button) showScreen(button.dataset.ruta);
+        byId('menu').addEventListener('click', (e) => {
+            const btn = e.target.closest('button.menu-item');
+            if (btn) showScreen(btn.dataset.ruta);
         });
 
-        // ==========================================
-        // CRUD GENERICO (catalogo, clientes, categorias, proveedores)
-        // Cada pantalla se describe con una configuracion: campos del formulario y columnas de la tabla.
-        // ==========================================
-        const money = (value) => (value === null || value === undefined) ? '—' : Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        const percent = (value) => (value === null || value === undefined) ? '—' : `${Number(value).toFixed(1)}%`;
-
-        const CRUD_SCREENS = {
-            '/catalog': {
-                el: 'catalog-container', title: 'Catalog', noun: 'product', api: '/catalog', id: 'producto_id', lookups: '/catalog/lookups',
-                subtitle: 'Products with price, cost and stock. The cost is what lets us calculate profit and ROI.',
-                fields: [
-                    { key: 'nombre', label: 'Product', max: 100, required: true },
-                    { key: 'precio', label: 'Price', type: 'number', step: '0.01', min: 0, required: true },
-                    { key: 'costo', label: 'Cost', type: 'number', step: '0.01', min: 0, value: 0 },
-                    { key: 'stock', label: 'Stock', type: 'number', step: '1', min: 0, value: 0 },
-                    { key: 'categoria_id', label: 'Category', type: 'select', options: 'categorias' },
-                    { key: 'proveedor_id', label: 'Supplier', type: 'select', options: 'proveedores' },
-                    { key: 'unidad_id', label: 'Unit', type: 'select', options: 'unidades' },
-                    { key: 'referencia_almacen', label: 'Reference', max: 45 },
-                ],
-                columns: [['nombre', 'Product'], ['precio', 'Price', 'money'], ['costo', 'Cost', 'money'], ['stock', 'Stock'], ['categoria', 'Category'], ['proveedor', 'Supplier']],
-            },
-            '/clientes': {
-                el: 'clientes-container', title: 'Customers', noun: 'customer', api: '/clientes', id: 'cliente_id',
-                subtitle: 'People who buy from your store.',
-                fields: [
-                    { key: 'nombre_completo', label: 'Full name', max: 100, required: true },
-                    { key: 'telefono', label: 'Phone', max: 20 },
-                ],
-                columns: [['nombre_completo', 'Name'], ['telefono', 'Phone']],
-            },
-            '/categorias': {
-                el: 'categorias-container', title: 'Categories', noun: 'category', api: '/categorias', id: 'categoria_id',
-                subtitle: 'Groups used to organize and analyze your products.',
-                fields: [{ key: 'nombre', label: 'Name', max: 45, required: true }],
-                columns: [['nombre', 'Name']],
-            },
-            '/proveedores': {
-                el: 'proveedores-container', title: 'Suppliers', noun: 'supplier', api: '/proveedores', id: 'proveedor_id',
-                subtitle: 'Who provides your products.',
-                fields: [
-                    { key: 'nombre', label: 'Name', max: 100, required: true },
-                    { key: 'telefono', label: 'Phone', max: 20 },
-                ],
-                columns: [['nombre', 'Name'], ['telefono', 'Phone']],
-            },
-        };
-
-        function buildCrud(ruta) {
-            const cfg = CRUD_SCREENS[ruta];
-            const root = byId(cfg.el);
-            root.innerHTML = `
-                <div class="panel-head"><h2>${cfg.title}</h2><p class="meta">${cfg.subtitle}</p></div>
-                <form>
-                    <div class="form-grid">${cfg.fields.map((f) => `
-                        <div><label>${f.label}</label>${f.type === 'select'
-                            ? `<select data-key="${f.key}"></select>`
-                            : `<input data-key="${f.key}" type="${f.type || 'text'}" ${f.max ? `maxlength="${f.max}"` : ''} ${f.step ? `step="${f.step}"` : ''} ${f.min !== undefined ? `min="${f.min}"` : ''} ${f.required ? 'required' : ''}>`}
-                        </div>`).join('')}
+        // ---------------- INTEGRACION 3 BD ----------------
+        async function loadIntegracion() {
+            const data = await apiRequest('/integracion/estado');
+            const renderCard = (titulo, obj, extra) => `
+                <div style="border:1px solid #e3e8ee;border-radius:12px;padding:1.2rem;background:#f8fafc">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <h3 style="margin:0">${titulo}</h3>
+                        <span class="pill ${obj.conectado ? 'ok' : 'off'}">${obj.conectado ? `Conectado (${obj.ms} ms)` : 'Desconectado'}</span>
                     </div>
-                    <div class="form-actions">
-                        <button class="primary" type="submit">Add ${cfg.noun}</button>
-                        <button class="secondary hidden" type="button" data-role="cancel">Cancel</button>
-                    </div>
-                </form>
-                <p class="message"></p>
-                <div class="table-wrap"><table>
-                    <thead><tr>${cfg.columns.map((c) => `<th>${c[1]}</th>`).join('')}<th>Actions</th></tr></thead>
-                    <tbody></tbody>
-                </table></div>`;
+                    <p class="meta" style="margin:.5rem 0">${escapeHtml(obj.funcion || obj.error || '')}</p>
+                    <pre class="json-box" style="margin:.6rem 0 0">${escapeHtml(JSON.stringify(extra, null, 2))}</pre>
+                </div>`;
+            byId('integracion-grid').innerHTML =
+                renderCard('PostgreSQL (Transaccional)', data.postgres, data.postgres.tablas || data.postgres) +
+                renderCard('Redis (Sesiones)', data.redis, { sesiones_activas: data.redis.sesiones_activas, ttl_sesion_actual_seg: data.redis.ttl_sesion_actual_seg }) +
+                renderCard('MongoDB (Analitica ETL)', data.mongo, data.mongo.colecciones || data.mongo);
+        }
+        byId('btn-refresh-integracion').addEventListener('click', loadIntegracion);
 
-            const ui = { form: root.querySelector('form'), message: root.querySelector('.message'), tbody: root.querySelector('tbody') };
-            ui.submit = ui.form.querySelector('[type="submit"]');
-            ui.cancel = ui.form.querySelector('[data-role="cancel"]');
-            cfg.ui = ui;
-            cfg.rows = [];
-            cfg.editingId = null;
+        // ---------------- VENTAS ----------------
+        let carritoVenta = [];
+        let catalogoVentaMap = new Map();
 
-            const field = (key) => ui.form.querySelector(`[data-key="${key}"]`);
-            const readField = (f) => {
-                const raw = field(f.key).value;
-                if (f.type === 'select' || f.type === 'number') return raw === '' ? null : Number(raw);
-                return raw.trim() === '' ? null : raw.trim();
-            };
-
-            ui.form.addEventListener('submit', async (event) => {
-                event.preventDefault();
-                const body = {};
-                cfg.fields.forEach((f) => { body[f.key] = readField(f); });
-                try {
-                    if (cfg.editingId) {
-                        await apiRequest(`${cfg.api}/${cfg.editingId}`, { method: 'PUT', body: JSON.stringify(body) });
-                    } else {
-                        await apiRequest(cfg.api, { method: 'POST', body: JSON.stringify(body) });
-                    }
-                    const saved = cfg.editingId ? `${cfg.noun} updated.` : `${cfg.noun} added.`;
-                    await loadCrud(ruta);
-                    showMessage(ui.message, saved.charAt(0).toUpperCase() + saved.slice(1), true);
-                } catch (error) {
-                    showMessage(ui.message, error.message);
-                }
-            });
-
-            ui.cancel.addEventListener('click', () => resetCrudForm(ruta));
-
-            ui.tbody.addEventListener('click', async (event) => {
-                const button = event.target.closest('button');
-                if (!button) return;
-                const row = cfg.rows.find((r) => String(r[cfg.id]) === button.dataset.id);
-                try {
-                    if (button.dataset.action === 'delete') {
-                        if (!window.confirm(`Delete this ${cfg.noun}?`)) return;
-                        await apiRequest(`${cfg.api}/${row[cfg.id]}`, { method: 'DELETE' });
-                        await loadCrud(ruta);
-                        showMessage(ui.message, `${cfg.noun.charAt(0).toUpperCase() + cfg.noun.slice(1)} deleted.`, true);
-                    } else {
-                        cfg.editingId = row[cfg.id];
-                        ui.form.classList.remove('hidden');
-                        cfg.fields.forEach((f) => { field(f.key).value = row[f.key] ?? ''; });
-                        ui.cancel.classList.remove('hidden');
-                        ui.submit.textContent = 'Save changes';
-                        showMessage(ui.message, '');
-                        ui.form.scrollIntoView({ behavior: 'smooth' });
-                    }
-                } catch (error) {
-                    showMessage(ui.message, error.message);
-                }
-            });
+        function renderCarrito() {
+            const el = byId('venta-cart-preview');
+            if (!carritoVenta.length) { el.innerHTML = '<em>Carrito vacio. Agrega al menos un producto.</em>'; return; }
+            let total = 0;
+            el.innerHTML = carritoVenta.map((item, idx) => {
+                const sub = item.precio * item.cantidad;
+                total += sub;
+                return `<span style="display:inline-block;background:#e7f0fa;color:#0056b3;padding:.25rem .6rem;border-radius:6px;margin:.2rem .3rem .2rem 0">
+                    ${escapeHtml(item.nombre)} x${item.cantidad} ($${sub.toLocaleString()})
+                    <a href="#" data-rm-cart="${idx}" style="color:#dc3545;margin-left:.4rem;text-decoration:none;font-weight:bold">×</a>
+                </span>`;
+            }).join('') + `<div style="margin-top:.4rem"><strong>Total estimado: $${total.toLocaleString()}</strong></div>`;
         }
 
-        function resetCrudForm(ruta) {
-            const cfg = CRUD_SCREENS[ruta];
-            cfg.editingId = null;
-            cfg.ui.form.reset();
-            cfg.fields.forEach((f) => { if (f.value !== undefined) cfg.ui.form.querySelector(`[data-key="${f.key}"]`).value = f.value; });
-            cfg.ui.cancel.classList.add('hidden');
-            cfg.ui.submit.textContent = `Add ${cfg.noun}`;
-            cfg.ui.form.classList.toggle('hidden', !can(ruta, 'create'));
-        }
+        byId('venta-cart-preview').addEventListener('click', (e) => {
+            const rm = e.target.closest('[data-rm-cart]');
+            if (!rm) return;
+            e.preventDefault();
+            carritoVenta.splice(Number(rm.dataset.rmCart), 1);
+            renderCarrito();
+        });
 
-        async function loadCrud(ruta) {
-            const cfg = CRUD_SCREENS[ruta];
-            if (!cfg.ui) buildCrud(ruta);
-            try {
-                if (cfg.lookups) {
-                    const lookups = await apiRequest(cfg.lookups);
-                    cfg.fields.filter((f) => f.type === 'select').forEach((f) => {
-                        cfg.ui.form.querySelector(`[data-key="${f.key}"]`).innerHTML = '<option value="">(none)</option>'
-                            + (lookups[f.options] || []).map((o) => `<option value="${o.id}">${escapeHtml(o.nombre)}</option>`).join('');
-                    });
-                }
-                resetCrudForm(ruta);
-                cfg.rows = await apiRequest(cfg.api);
-                cfg.ui.tbody.innerHTML = cfg.rows.length ? cfg.rows.map((row) => `
-                    <tr>
-                        ${cfg.columns.map(([key, , type]) => `<td>${type === 'money' ? money(row[key]) : (row[key] === null || row[key] === '' ? '—' : escapeHtml(row[key]))}</td>`).join('')}
-                        <td class="actions">
-                            ${can(ruta, 'update') ? `<button class="secondary" data-action="edit" data-id="${row[cfg.id]}">Edit</button>` : ''}
-                            ${can(ruta, 'delete') ? `<button class="danger" data-action="delete" data-id="${row[cfg.id]}">Delete</button>` : ''}
-                        </td>
-                    </tr>`).join('') : emptyRow(cfg.columns.length + 1, `No ${cfg.noun}s yet.`);
-                showMessage(cfg.ui.message, '');
-            } catch (error) {
-                showMessage(cfg.ui.message, error.message);
-            }
-        }
-
-        // ==========================================
-        // VENTAS (punto de venta + historial)
-        // ==========================================
-        const ventaMessage = byId('venta-message');
-        let ventaLookups = { clientes: [], productos: [], metodos: [] };
-        let cart = [];
-
-        function renderCart() {
-            byId('cart-body').innerHTML = cart.length ? cart.map((line, index) => `
-                <tr>
-                    <td>${escapeHtml(line.nombre)}</td>
-                    <td>${money(line.precio)}</td>
-                    <td>${line.cantidad}</td>
-                    <td>${money(line.precio * line.cantidad)}</td>
-                    <td><button class="danger" type="button" data-remove="${index}">Remove</button></td>
-                </tr>`).join('') : emptyRow(5, 'Add products to start a sale.');
-            byId('cart-total').textContent = money(cart.reduce((sum, line) => sum + line.precio * line.cantidad, 0));
-        }
+        byId('venta-add-item').addEventListener('click', () => {
+            const prodId = Number(byId('venta-producto').value);
+            const cant = Number(byId('venta-cantidad').value);
+            const prod = catalogoVentaMap.get(prodId);
+            if (!prod || cant < 1) return;
+            const existing = carritoVenta.find((i) => i.producto_id === prodId);
+            if (existing) existing.cantidad += cant;
+            else carritoVenta.push({ producto_id: prodId, nombre: prod.nombre, precio: Number(prod.precio), cantidad: cant });
+            renderCarrito();
+        });
 
         async function loadVentas() {
             byId('venta-form').classList.toggle('hidden', !can('/ventas', 'create'));
-            try {
-                ventaLookups = await apiRequest('/ventas/lookups');
-                byId('venta-cliente').innerHTML = '<option value="">Walk-in customer</option>'
-                    + ventaLookups.clientes.map((c) => `<option value="${c.cliente_id}">${escapeHtml(c.nombre_completo)}</option>`).join('');
-                byId('venta-metodo').innerHTML = ventaLookups.metodos.map((m) => `<option value="${m.metodo_pago_id}">${escapeHtml(m.nombre)}</option>`).join('');
-                byId('venta-producto').innerHTML = ventaLookups.productos
-                    .map((p) => `<option value="${p.producto_id}">${escapeHtml(p.nombre)} — ${money(p.precio)} (stock ${p.stock})</option>`).join('');
-                renderCart();
-                await loadVentasHistory();
-            } catch (error) {
-                showMessage(ventaMessage, error.message);
-            }
-        }
+            carritoVenta = [];
+            renderCarrito();
+            const lookups = await apiRequest('/ventas/lookups');
+            byId('venta-cliente').innerHTML = '<option value="">-- Cliente ocasional (sin registro) --</option>' +
+                lookups.clientes.map((c) => `<option value="${c.cliente_id}">${escapeHtml(c.nombre_completo)}</option>`).join('');
+            byId('venta-metodo').innerHTML = lookups.metodos.map((m) => `<option value="${m.metodo_pago_id}">${escapeHtml(m.nombre)}</option>`).join('');
+            catalogoVentaMap = new Map(lookups.productos.map((p) => [p.producto_id, p]));
+            byId('venta-producto').innerHTML = lookups.productos.map((p) => `<option value="${p.producto_id}">${escapeHtml(p.nombre)} ($${Number(p.precio).toLocaleString()} · stock: ${p.stock})</option>`).join('');
 
-        async function loadVentasHistory() {
             const ventas = await apiRequest('/ventas');
             byId('ventas-body').innerHTML = ventas.length ? ventas.map((v) => `
-                <tr data-venta="${v.venta_id}">
-                    <td>${v.venta_id}</td>
-                    <td>${new Date(v.fecha_venta).toLocaleString()}</td>
-                    <td>${escapeHtml(v.cliente || 'Walk-in')}</td>
+                <tr>
+                    <td>#${v.venta_id}</td>
+                    <td>${new Date(v.fecha_venta).toLocaleDateString('es-CO')}</td>
+                    <td>${escapeHtml(v.cliente || 'Ocasional')}</td>
                     <td>${v.unidades}</td>
-                    <td>${money(v.total)}</td>
-                    <td>${money(v.utilidad)}</td>
+                    <td>$${Number(v.total).toLocaleString()}</td>
+                    <td>$${Number(v.utilidad).toLocaleString()}</td>
                     <td><span class="pill ${v.estado === 'pagada' ? 'ok' : 'off'}">${escapeHtml(v.estado)}</span></td>
                     <td class="actions">
-                        <button class="secondary" data-action="view" data-id="${v.venta_id}">View</button>
-                        ${can('/ventas', 'update') && v.estado !== 'anulada' ? `<button class="danger" data-action="cancel" data-id="${v.venta_id}">Cancel</button>` : ''}
+                        ${v.estado === 'pagada' && can('/ventas', 'update') ? `<button class="danger" data-anular="${v.venta_id}">Anular</button>` : ''}
                     </td>
-                </tr>`).join('') : emptyRow(8, 'No sales yet.');
+                </tr>
+            `).join('') : emptyRow(8, 'Sin ventas registradas.');
         }
 
-        byId('venta-add').addEventListener('click', () => {
-            const productId = Number(byId('venta-producto').value);
-            const quantity = Number(byId('venta-cantidad').value);
-            const product = ventaLookups.productos.find((p) => p.producto_id === productId);
-            if (!product || !Number.isInteger(quantity) || quantity < 1) {
-                showMessage(ventaMessage, 'Choose a product and a quantity of at least 1.');
-                return;
-            }
-            const existing = cart.find((line) => line.producto_id === productId);
-            if ((existing ? existing.cantidad : 0) + quantity > product.stock) {
-                showMessage(ventaMessage, `Only ${product.stock} units of ${product.nombre} in stock.`);
-                return;
-            }
-            if (existing) existing.cantidad += quantity;
-            else cart.push({ producto_id: productId, nombre: product.nombre, precio: Number(product.precio), cantidad: quantity });
-            byId('venta-cantidad').value = 1;
-            showMessage(ventaMessage, '');
-            renderCart();
-        });
-
-        byId('cart-body').addEventListener('click', (event) => {
-            const button = event.target.closest('button[data-remove]');
-            if (!button) return;
-            cart.splice(Number(button.dataset.remove), 1);
-            renderCart();
-        });
-
-        byId('venta-clear').addEventListener('click', () => { cart = []; renderCart(); showMessage(ventaMessage, ''); });
-
-        byId('venta-form').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            if (!cart.length) {
-                showMessage(ventaMessage, 'Add at least one product.');
-                return;
-            }
+        byId('venta-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!carritoVenta.length) return showMessage(byId('ventas-message'), 'Agrega al menos un producto al carrito.');
             try {
-                const result = await apiRequest('/ventas', {
+                await apiRequest('/ventas', {
                     method: 'POST',
                     body: JSON.stringify({
-                        cliente_id: byId('venta-cliente').value ? Number(byId('venta-cliente').value) : null,
+                        cliente_id: byId('venta-cliente').value || null,
                         metodo_pago_id: Number(byId('venta-metodo').value),
-                        items: cart.map((line) => ({ producto_id: line.producto_id, cantidad: line.cantidad })),
-                    })
+                        items: carritoVenta.map(({ producto_id, cantidad }) => ({ producto_id, cantidad })),
+                    }),
                 });
-                cart = [];
                 await loadVentas();
-                showMessage(ventaMessage, `Sale #${result.venta_id} registered. Total: ${money(result.total)}`, true);
-            } catch (error) {
-                showMessage(ventaMessage, error.message);
+                showMessage(byId('ventas-message'), 'Venta registrada exitosamente.', true);
+            } catch (err) {
+                showMessage(byId('ventas-message'), err.message);
             }
         });
 
-        byId('ventas-body').addEventListener('click', async (event) => {
-            const button = event.target.closest('button');
-            if (!button) return;
-            const row = button.closest('tr');
+        byId('ventas-body').addEventListener('click', async (e) => {
+            const btn = e.target.closest('[data-anular]');
+            if (!btn) return;
+            if (!window.confirm(`¿Anular la venta #${btn.dataset.anular}? El stock volvera al inventario.`)) return;
             try {
-                if (button.dataset.action === 'cancel') {
-                    if (!window.confirm('Cancel this sale? The stock will return to the inventory.')) return;
-                    await apiRequest(`/ventas/${button.dataset.id}/anular`, { method: 'PATCH' });
-                    await loadVentas();
-                    showMessage(ventaMessage, `Sale #${button.dataset.id} cancelled.`, true);
-                } else if (row.nextElementSibling?.classList.contains('detail-row')) {
-                    row.nextElementSibling.remove();
-                } else {
-                    const items = await apiRequest(`/ventas/${button.dataset.id}`);
-                    row.insertAdjacentHTML('afterend', `<tr class="detail-row"><td colspan="8">${items.map((i) =>
-                        `${escapeHtml(i.nombre)} × ${i.cantidad} @ ${money(i.precio_unitario)} = ${money(i.subtotal)}`).join(' &nbsp;·&nbsp; ')}</td></tr>`);
-                }
-            } catch (error) {
-                showMessage(ventaMessage, error.message);
+                await apiRequest(`/ventas/${btn.dataset.anular}/anular`, { method: 'PATCH' });
+                await loadVentas();
+                showMessage(byId('ventas-message'), 'Venta anulada y stock restaurado.', true);
+            } catch (err) {
+                showMessage(byId('ventas-message'), err.message);
             }
         });
 
-        // ==========================================
-        // ANALITICA: dashboard de KPI por rol, proceso ETL y tabla de KPI
-        // ==========================================
-        const analyticsMessage = byId('analitica-message');
-        let analyticsRole = null;
-
-        const unitFormats = { money, percent, unidades: (v) => `${Number(v)} u.`, count: (v) => String(v) };
-        const fmtUnit = (value, unit) => (unitFormats[unit] || String)(value);
-
-        function barList(items, unit) {
-            if (!items.length) return '<p class="meta">Nothing to show.</p>';
-            const max = Math.max(...items.map((item) => item.valor), 1);
-            return `<div class="bars">${items.map((item) => `
-                <div class="bar-row">
-                    <span>${escapeHtml(item.etiqueta)}</span>
-                    <div class="bar-track"><div class="bar-fill" style="width:${Math.max((item.valor / max) * 100, 2)}%"></div></div>
-                    <strong>${fmtUnit(item.valor, unit)}</strong>
-                </div>`).join('')}</div>`;
+        // ---------------- CATALOGO PRODUCTOS ----------------
+        let editingProductId = null;
+        function resetProductForm() {
+            editingProductId = null;
+            byId('product-form').reset();
+            byId('product-cancel').classList.add('hidden');
+            byId('product-submit').textContent = 'Guardar producto';
+            byId('product-form').classList.toggle('hidden', !can('/catalog', 'create'));
         }
 
-        function seriesChart(points, unit) {
-            const width = 640, height = 190, pad = 26;
-            const max = Math.max(...points.map((p) => p.valor), 1);
-            const barWidth = (width - pad * 2) / points.length;
-            const bars = points.map((p, i) => {
-                const h = (p.valor / max) * (height - pad * 2);
-                return `<rect x="${pad + i * barWidth + 1}" y="${height - pad - h}" width="${Math.max(barWidth - 2, 1)}" height="${h}" rx="2" fill="#0a74da"><title>${p.fecha}: ${fmtUnit(p.valor, unit)}</title></rect>`;
-            }).join('');
-            return `<svg class="chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Time series">
-                ${bars}<line x1="${pad}" y1="${height - pad}" x2="${width - pad}" y2="${height - pad}" stroke="#cbd5df"/>
-                <text x="${pad}" y="${height - 8}" font-size="11" fill="#5b6770">${points[0].fecha}</text>
-                <text x="${width - pad}" y="${height - 8}" font-size="11" text-anchor="end" fill="#5b6770">${points[points.length - 1].fecha}</text>
-                <text x="${pad}" y="14" font-size="11" fill="#5b6770">max ${fmtUnit(max, unit)}</text></svg>`;
+        async function loadCatalog() {
+            resetProductForm();
+            const lookups = await apiRequest('/catalog/lookups');
+            const fillSel = (id, list) => {
+                byId(id).innerHTML = '<option value="">-- Ninguno --</option>' + list.map((x) => `<option value="${x.id}">${escapeHtml(x.nombre)}</option>`).join('');
+            };
+            fillSel('product-cat', lookups.categorias);
+            fillSel('product-prov', lookups.proveedores);
+            fillSel('product-und', lookups.unidades);
+
+            const products = await apiRequest('/catalog');
+            byId('catalog-body').innerHTML = products.length ? products.map((p) => `
+                <tr>
+                    <td><strong>${escapeHtml(p.nombre)}</strong><br><small class="meta">${escapeHtml(p.referencia_almacen || '')}</small></td>
+                    <td>${escapeHtml(p.categoria || '-')}</td>
+                    <td>$${Number(p.precio).toLocaleString()}</td>
+                    <td>$${Number(p.costo).toLocaleString()}</td>
+                    <td>${p.stock} ${escapeHtml(p.unidad || '')}</td>
+                    <td class="actions">
+                        ${can('/catalog', 'update') ? `<button class="secondary" data-edit-prod='${JSON.stringify(p).replace(/'/g, "&#39;")}'>Editar</button>` : ''}
+                        ${can('/catalog', 'delete') ? `<button class="danger" data-del-prod="${p.producto_id}">Eliminar</button>` : ''}
+                    </td>
+                </tr>
+            `).join('') : emptyRow(6, 'No hay productos.');
         }
 
-        function tableFromResult(result) {
-            return `<div class="table-wrap"><table><thead><tr>${result.columnas.map((c) => `<th>${escapeHtml(c)}</th>`).join('')}</tr></thead>
-                <tbody>${result.filas.map((row) => `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
-        }
+        byId('product-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                nombre: byId('product-nombre').value,
+                precio: byId('product-precio').value,
+                costo: byId('product-costo').value,
+                stock: byId('product-stock').value,
+                referencia_almacen: byId('product-ref').value,
+                categoria_id: byId('product-cat').value || null,
+                proveedor_id: byId('product-prov').value || null,
+                unidad_id: byId('product-und').value || null,
+            };
+            try {
+                if (editingProductId) await apiRequest(`/catalog/${editingProductId}`, { method: 'PUT', body: JSON.stringify(payload) });
+                else await apiRequest('/catalog', { method: 'POST', body: JSON.stringify(payload) });
+                await loadCatalog();
+                showMessage(byId('catalog-message'), 'Producto guardado.', true);
+            } catch (err) {
+                showMessage(byId('catalog-message'), err.message);
+            }
+        });
+        byId('product-cancel').addEventListener('click', resetProductForm);
 
-        function renderDashboard(data) {
-            const box = byId('tab-dashboard');
-            const select = byId('analitica-rol');
-            select.classList.toggle('hidden', data.roles_disponibles.length < 2);
-            select.innerHTML = data.roles_disponibles.map((r) => `<option value="${r}" ${r === data.rol ? 'selected' : ''}>Dashboard: ${r}</option>`).join('');
-
-            if (data.sin_rol) {
-                byId('analitica-updated').textContent = 'No KPI dashboard for this profile.';
-                box.innerHTML = '<p class="meta">KPI dashboards exist for the roles Administrador, Gerente and Cajero.</p>';
+        byId('catalog-body').addEventListener('click', async (e) => {
+            const del = e.target.closest('[data-del-prod]');
+            if (del) {
+                if (!window.confirm('¿Eliminar producto?')) return;
+                try {
+                    await apiRequest(`/catalog/${del.dataset.delProd}`, { method: 'DELETE' });
+                    await loadCatalog();
+                } catch (err) { showMessage(byId('catalog-message'), err.message); }
                 return;
             }
-            if (!data.resultados.length) {
-                byId('analitica-updated').textContent = `Role: ${data.rol} · ${data.kpis_del_rol} KPIs`;
-                box.innerHTML = '<p class="meta">Nothing is calculated yet. A user who can refresh data must press <strong>Refresh data</strong> to run the ETL (PostgreSQL → MongoDB).</p>';
-                return;
-            }
-            const last = data.resultados.map((r) => new Date(r.generado_en).getTime()).reduce((a, b) => Math.max(a, b));
-            byId('analitica-updated').textContent = `Role: ${data.rol} · ${data.resultados.length} KPIs · Last update: ${new Date(last).toLocaleString()}`;
-
-            const cards = data.resultados.filter((r) => r.visual === 'tarjeta').map((r) => `
-                <div class="kpi ${r.resultado.tono || ''}"><span class="kpi-label">${escapeHtml(r.nombre)} <small>(${r.codigo})</small></span>
-                    <strong class="kpi-value">${fmtUnit(r.resultado.valor, r.resultado.unidad)}</strong><small>${escapeHtml(r.resultado.nota || '')}</small></div>`).join('');
-
-            const others = data.resultados.filter((r) => r.visual !== 'tarjeta').map((r) => {
-                let content = '';
-                if (r.visual === 'barras') content = barList(r.resultado.items, r.resultado.unidad);
-                else if (r.visual === 'serie') content = seriesChart(r.resultado.puntos, r.resultado.unidad);
-                else if (r.visual === 'tabla') content = r.resultado.filas.length ? tableFromResult(r.resultado) : '<p class="meta">No associations found.</p>';
-                const wide = r.visual === 'serie' || r.visual === 'tabla';
-                return `<div class="card" ${wide ? 'style="grid-column:1/-1"' : ''}><h3>${escapeHtml(r.nombre)} <small style="color:var(--muted)">(${r.codigo})</small></h3>${content}</div>`;
-            }).join('');
-
-            const pythonHint = data.rol === 'Gerente' && !data.resultados.some((r) => r.codigo === 'K14')
-                ? '<p class="meta">KPI K14 (products bought together) is calculated with Python: run <code>python analitica/analisis.py</code>.</p>' : '';
-            box.innerHTML = `${cards ? `<div class="kpi-grid">${cards}</div>` : ''}<div class="grid-2">${others}</div>${pythonHint}`;
-        }
-
-        function renderEtl({ pasos, documentos }) {
-            const box = byId('tab-etl');
-            if (!pasos.length) {
-                box.innerHTML = '<p class="meta">The ETL has not run yet. Press <strong>Refresh data</strong>.</p>';
-                return;
-            }
-            const ok = pasos.filter((p) => p.estado === 'OK').length;
-            box.innerHTML = `
-                <p class="meta" style="margin-bottom:1rem"><strong>Last run:</strong> ${new Date(pasos[0].inicio).toLocaleString()} · <strong>${ok}/${pasos.length}</strong> operators OK.
-                Each KPI is an ETL operator: <strong>Extract</strong> (SQL on PostgreSQL) → <strong>Transform</strong> (calculation) → <strong>Load</strong> (document in MongoDB).</p>
-                <div class="table-wrap"><table class="compact">
-                    <thead><tr><th>Code</th><th>Operator</th><th>Source tables</th><th>Rows</th><th>Extract / Transform / Load</th><th>MongoDB collection</th><th>Status</th><th>Stored result</th></tr></thead>
-                    <tbody>${pasos.map((p) => `<tr>
-                        <td><strong>${p.codigo}</strong></td>
-                        <td>${escapeHtml(p.nombre)}</td>
-                        <td>${escapeHtml((p.fuente || []).join(', '))}</td>
-                        <td>${p.filas_extraidas ?? '—'}</td>
-                        <td>${p.ms_extract ?? '—'} / ${p.ms_transform ?? '—'} / ${p.ms_load ?? '—'} ms</td>
-                        <td>${escapeHtml(p.coleccion_destino)}</td>
-                        <td><span class="pill ${p.estado === 'OK' ? 'ok' : 'off'}">${p.estado}</span>${p.error ? `<br><small>${escapeHtml(p.error)}</small>` : ''}</td>
-                        <td>${documentos[p.codigo] ? `<details><summary>${escapeHtml(p.resultado_resumen || 'View')}</summary><pre class="json">${escapeHtml(JSON.stringify(documentos[p.codigo], null, 2))}</pre></details>` : escapeHtml(p.resultado_resumen || '—')}</td>
-                    </tr>`).join('')}</tbody>
-                </table></div>`;
-        }
-
-        function renderCatalogo(catalogo) {
-            const byRole = catalogo.reduce((acc, k) => { k.roles.forEach((r) => { acc[r] = (acc[r] || 0) + 1; }); return acc; }, {});
-            byId('tab-catalogo').innerHTML = `
-                <p class="meta" style="margin-bottom:.8rem">Documented KPI table: each role has at least 3 indicators.</p>
-                <div>${Object.entries(byRole).map(([role, count]) => `<span class="chip">${escapeHtml(role)}: ${count} KPIs</span>`).join('')}</div>
-                <div class="table-wrap"><table>
-                    <thead><tr><th>Role</th><th>Code</th><th>KPI</th><th>Definition</th><th>Formula</th><th>Source</th><th>Chart</th><th>ETL operator</th><th>MongoDB</th></tr></thead>
-                    <tbody>${catalogo.map((k) => `<tr>
-                        <td>${escapeHtml(k.roles.join(', '))}</td><td><strong>${k.codigo}</strong></td><td>${escapeHtml(k.nombre)}</td>
-                        <td>${escapeHtml(k.descripcion)}</td><td><code>${escapeHtml(k.formula)}</code></td><td>${escapeHtml(k.tablas.join(', '))}</td>
-                        <td>${escapeHtml(k.visual)}</td><td>${escapeHtml(k.operador)}</td><td>${escapeHtml(k.coleccion)}</td>
-                    </tr>`).join('')}</tbody>
-                </table></div>`;
-        }
-
-        async function showAnalyticsTab(tab) {
-            document.querySelectorAll('#analitica-tabs .tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
-            ['dashboard', 'etl', 'catalogo'].forEach((t) => byId(`tab-${t}`).classList.toggle('hidden', t !== tab));
-            showMessage(analyticsMessage, '');
-            if (tab !== 'dashboard') {
-                byId('analitica-rol').classList.add('hidden');
-                byId('analitica-updated').textContent = tab === 'etl'
-                    ? 'ETL process: one operator per KPI (PostgreSQL → MongoDB).'
-                    : 'Documentation of every KPI: role, definition, formula, source and destination.';
-            }
-            try {
-                if (tab === 'dashboard') renderDashboard(await apiRequest(`/analitica/kpis${analyticsRole ? `?rol=${encodeURIComponent(analyticsRole)}` : ''}`));
-                else if (tab === 'etl') renderEtl(await apiRequest('/analitica/etl-log'));
-                else renderCatalogo(await apiRequest('/analitica/catalogo'));
-            } catch (error) {
-                showMessage(analyticsMessage, error.message);
-            }
-        }
-
-        async function loadAnalitica() {
-            analyticsRole = null;
-            const canRefresh = can('/analitica', 'update');
-            byId('etl-button').classList.toggle('hidden', !canRefresh);
-            document.querySelector('#analitica-tabs [data-tab="etl"]').classList.toggle('hidden', !canRefresh);
-            await showAnalyticsTab('dashboard');
-        }
-
-        byId('analitica-tabs').addEventListener('click', (event) => {
-            const tab = event.target.closest('.tab');
-            if (tab) showAnalyticsTab(tab.dataset.tab);
-        });
-
-        byId('analitica-rol').addEventListener('change', (event) => {
-            analyticsRole = event.target.value;
-            showAnalyticsTab('dashboard');
-        });
-
-        byId('etl-button').addEventListener('click', async () => {
-            const button = byId('etl-button');
-            const current = document.querySelector('#analitica-tabs .tab.active').dataset.tab;
-            button.disabled = true;
-            showMessage(analyticsMessage, 'Running the ETL: extracting from PostgreSQL and loading MongoDB...', true);
-            try {
-                const summary = await apiRequest('/analitica/etl', { method: 'POST' });
-                await showAnalyticsTab(current);
-                showMessage(analyticsMessage, `ETL finished: ${summary.kpis_ok} KPIs loaded, ${summary.productos} products and ${summary.ventas} sales as documents${summary.errores ? `, ${summary.errores} errors` : ''}.`, summary.errores === 0);
-            } catch (error) {
-                showMessage(analyticsMessage, error.message);
-            } finally {
-                button.disabled = false;
+            const edit = e.target.closest('[data-edit-prod]');
+            if (edit) {
+                const p = JSON.parse(edit.dataset.editProd);
+                editingProductId = p.producto_id;
+                byId('product-form').classList.remove('hidden');
+                byId('product-nombre').value = p.nombre;
+                byId('product-precio').value = p.precio;
+                byId('product-costo').value = p.costo;
+                byId('product-stock').value = p.stock;
+                byId('product-ref').value = p.referencia_almacen || '';
+                byId('product-cat').value = p.categoria_id || '';
+                byId('product-prov').value = p.proveedor_id || '';
+                byId('product-und').value = p.unidad_id || '';
+                byId('product-cancel').classList.remove('hidden');
+                byId('product-submit').textContent = 'Actualizar';
             }
         });
 
-        // ==========================================
-        // INTEGRACION (PostgreSQL + Redis + MongoDB)
-        // ==========================================
-        async function loadIntegracion() {
-            const message = byId('integracion-message');
-            try {
-                const e = await apiRequest('/integracion/estado');
-                const cls = (s) => (s.conectado ? 'ok' : 'off');
-                const pill = (s) => `<span class="pill ${cls(s)}">${s.conectado ? 'Connected' : 'Offline'}</span>`;
-                const rows = (obj) => Object.entries(obj).map(([k, v]) => `<li><span>${escapeHtml(k)}</span><strong>${escapeHtml(v ?? '—')}</strong></li>`).join('');
-                const minutes = (seconds) => (seconds > 0 ? `${Math.floor(seconds / 60)} min` : '—');
-
-                byId('integracion-body').innerHTML = `
-                    <div class="flow">
-                        <div class="flow-box">Browser<small>Dashboard</small></div><span class="flow-arrow">⇄ HTTP + JWT ⇄</span>
-                        <div class="flow-box">Express API<small>Node.js</small></div><span class="flow-arrow">⇄ SQL + RLS ⇄</span>
-                        <div class="flow-box ${cls(e.postgres)}">PostgreSQL<small>transactions · roles · permissions</small></div>
-                        <span class="flow-arrow">ETL ▶</span>
-                        <div class="flow-box ${cls(e.mongo)}">MongoDB<small>KPI results · documents</small></div>
-                    </div>
-                    <div class="flow">
-                        <div class="flow-box">Login</div><span class="flow-arrow">creates session ▶</span>
-                        <div class="flow-box ${cls(e.redis)}">Redis<small>active sessions</small></div>
-                        <span class="flow-arrow">◀ validates session</span><div class="flow-box">Express API</div>
-                    </div>
-                    <div class="grid-2" style="margin-top:1.2rem">
-                        <div class="card"><div class="status-head"><h3>PostgreSQL</h3>${pill(e.postgres)}</div>
-                            <p class="meta">${escapeHtml(e.postgres.funcion || e.postgres.error || '')}</p>
-                            ${e.postgres.conectado ? `<ul class="stat-list">${rows({ Version: e.postgres.version, Database: e.postgres.base, Latency: `${e.postgres.ms} ms`, ...Object.fromEntries(Object.entries(e.postgres.tablas).map(([k, v]) => [`Rows in ${k}`, v])) })}</ul>` : ''}</div>
-                        <div class="card"><div class="status-head"><h3>Redis</h3>${pill(e.redis)}</div>
-                            <p class="meta">${escapeHtml(e.redis.funcion || e.redis.error || '')}</p>
-                            ${e.redis.conectado ? `<ul class="stat-list">${rows({ 'Active sessions (this business)': e.redis.sesiones_activas, 'Your session expires in': minutes(e.redis.ttl_sesion_actual_seg), Latency: `${e.redis.ms} ms` })}</ul>` : ''}</div>
-                        <div class="card"><div class="status-head"><h3>MongoDB</h3>${pill(e.mongo)}</div>
-                            <p class="meta">${escapeHtml(e.mongo.funcion || e.mongo.error || '')}</p>
-                            ${e.mongo.conectado ? `<ul class="stat-list">${rows({ Database: e.mongo.base, Latency: `${e.mongo.ms} ms`, 'Last ETL': e.mongo.ultimo_etl ? new Date(e.mongo.ultimo_etl).toLocaleString() : 'never', ...Object.fromEntries(Object.entries(e.mongo.colecciones).map(([k, v]) => [`Documents in ${k}`, v])) })}</ul>` : ''}</div>
-                    </div>`;
-                showMessage(message, '');
-            } catch (error) {
-                showMessage(message, error.message);
-            }
+        // ---------------- MAESTROS SIMPLES (Clientes, Categorias, Proveedores) ----------------
+        async function loadSimpleMaster(ruta, tbodyId, idCol, cols) {
+            const rows = await apiRequest(ruta);
+            byId(tbodyId).innerHTML = rows.length ? rows.map((r) => `
+                <tr>
+                    ${cols.map((c) => `<td>${escapeHtml(r[c] || '-')}</td>`).join('')}
+                    <td class="actions">${can(ruta, 'delete') ? `<button class="danger" data-del-master="${ruta}/${r[idCol]}">Eliminar</button>` : ''}</td>
+                </tr>
+            `).join('') : emptyRow(cols.length + 1, 'Sin registros.');
         }
 
-        // ==========================================
-        // USERS
-        // ==========================================
-        const userMessage = byId('user-message');
-        const userForm = byId('create-user-form');
+        document.addEventListener('click', async (e) => {
+            const btn = e.target.closest('[data-del-master]');
+            if (!btn) return;
+            const url = btn.dataset.delMaster;
+            const ruta = '/' + url.split('/')[1];
+            try {
+                await apiRequest(url, { method: 'DELETE' });
+                await SCREENS[ruta].load();
+            } catch (err) { showMessage(byId('workspace-message'), err.message); }
+        });
+
+        byId('cliente-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await apiRequest('/clientes', { method: 'POST', body: JSON.stringify({ nombre_completo: byId('cliente-nombre').value, telefono: byId('cliente-tel').value }) });
+            e.target.reset();
+            await SCREENS['/clientes'].load();
+        });
+        byId('categoria-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await apiRequest('/categorias', { method: 'POST', body: JSON.stringify({ nombre: byId('categoria-nombre').value }) });
+            e.target.reset();
+            await SCREENS['/categorias'].load();
+        });
+        byId('proveedor-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await apiRequest('/proveedores', { method: 'POST', body: JSON.stringify({ nombre: byId('proveedor-nombre').value, telefono: byId('proveedor-tel').value }) });
+            e.target.reset();
+            await SCREENS['/proveedores'].load();
+        });
+
+        // ---------------- USERS ----------------
         let editingUserId = null;
-
         function resetUserForm() {
             editingUserId = null;
-            userForm.reset();
+            byId('create-user-form').reset();
             byId('password').required = true;
             byId('password-hint').textContent = '';
             byId('user-active-row').classList.add('hidden');
             byId('user-cancel').classList.add('hidden');
-            byId('user-submit').textContent = 'Create user';
-            userForm.classList.toggle('hidden', !can('/users', 'create'));
+            byId('user-submit').textContent = 'Crear usuario';
+            byId('create-user-form').classList.toggle('hidden', !can('/users', 'create'));
         }
 
         async function loadUsers() {
             resetUserForm();
-            try {
-                const perfiles = await apiRequest('/perfiles');
-                byId('profile_id').innerHTML = perfiles.map((p) => `<option value="${p.perfil_id}">${escapeHtml(p.nombre)}</option>`).join('');
-                const users = await apiRequest('/users');
-                byId('users-body').innerHTML = users.length ? users.map((user) => `
-                    <tr>
-                        <td>${escapeHtml(user.username)}</td>
-                        <td>${escapeHtml(user.perfil)}</td>
-                        <td><span class="pill ${user.is_active ? 'ok' : 'off'}">${user.is_active ? 'Active' : 'Inactive'}</span></td>
-                        <td class="actions">
-                            ${can('/users', 'update') ? `<button class="secondary" data-action="edit" data-id="${user.usuario_id}" data-username="${escapeHtml(user.username)}" data-profile="${user.perfil_id}" data-active="${user.is_active}">Edit</button>` : ''}
-                            ${can('/users', 'delete') ? `<button class="danger" data-action="delete" data-id="${user.usuario_id}">Delete</button>` : ''}
-                        </td>
-                    </tr>
-                `).join('') : emptyRow(4, 'No users yet.');
-            } catch (error) {
-                showMessage(userMessage, error.message);
-            }
+            const perfiles = await apiRequest('/perfiles');
+            byId('profile_id').innerHTML = perfiles.map((p) => `<option value="${p.perfil_id}">${escapeHtml(p.nombre)} (${escapeHtml(p.rol)})</option>`).join('');
+            const users = await apiRequest('/users');
+            byId('users-body').innerHTML = users.length ? users.map((u) => `
+                <tr>
+                    <td>${escapeHtml(u.username)}</td>
+                    <td>${escapeHtml(u.perfil)}</td>
+                    <td><span class="pill ${u.is_active ? 'ok' : 'off'}">${u.is_active ? 'Activo' : 'Inactivo'}</span></td>
+                    <td class="actions">
+                        ${can('/users', 'update') ? `<button class="secondary" data-edit-user='${JSON.stringify(u).replace(/'/g, "&#39;")}'>Editar</button>` : ''}
+                        ${can('/users', 'delete') ? `<button class="danger" data-del-user="${u.usuario_id}">Eliminar</button>` : ''}
+                    </td>
+                </tr>
+            `).join('') : emptyRow(4, 'Sin usuarios.');
         }
 
-        userForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const form = new FormData(userForm);
-            const body = { username: form.get('username'), perfil_id: Number(form.get('profile_id')) };
+        byId('create-user-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const body = { username: byId('username').value, perfil_id: Number(byId('profile_id').value) };
             try {
                 if (editingUserId) {
                     body.is_active = byId('user-active').checked;
-                    if (form.get('password')) body.password = form.get('password');
+                    if (byId('password').value) body.password = byId('password').value;
                     await apiRequest(`/users/${editingUserId}`, { method: 'PUT', body: JSON.stringify(body) });
-                    await loadUsers();
-                    showMessage(userMessage, 'User updated.', true);
                 } else {
-                    body.password = form.get('password');
+                    body.password = byId('password').value;
                     await apiRequest('/users', { method: 'POST', body: JSON.stringify(body) });
-                    await loadUsers();
-                    showMessage(userMessage, 'User created.', true);
                 }
-            } catch (error) {
-                showMessage(userMessage, error.message);
-            }
+                await loadUsers();
+                showMessage(byId('user-message'), 'Usuario guardado.', true);
+            } catch (err) { showMessage(byId('user-message'), err.message); }
         });
-
         byId('user-cancel').addEventListener('click', resetUserForm);
-
-        byId('users-body').addEventListener('click', async (event) => {
-            const button = event.target.closest('button');
-            if (!button) return;
-            try {
-                if (button.dataset.action === 'delete') {
-                    if (!window.confirm('Delete this user?')) return;
-                    await apiRequest(`/users/${button.dataset.id}`, { method: 'DELETE' });
-                    await loadUsers();
-                    showMessage(userMessage, 'User deleted.', true);
-                } else {
-                    editingUserId = button.dataset.id;
-                    userForm.classList.remove('hidden');
-                    byId('username').value = button.dataset.username;
-                    byId('profile_id').value = button.dataset.profile;
-                    byId('password').required = false;
-                    byId('password').value = '';
-                    byId('password-hint').textContent = '(leave empty to keep the current one)';
-                    byId('user-active').checked = button.dataset.active === 'true';
-                    byId('user-active-row').classList.remove('hidden');
-                    byId('user-cancel').classList.remove('hidden');
-                    byId('user-submit').textContent = 'Save changes';
-                    showMessage(userMessage, '');
-                    userForm.scrollIntoView({ behavior: 'smooth' });
-                }
-            } catch (error) {
-                showMessage(userMessage, error.message);
+        byId('users-body').addEventListener('click', async (e) => {
+            const del = e.target.closest('[data-del-user]');
+            if (del) {
+                if (!window.confirm('¿Eliminar usuario?')) return;
+                await apiRequest(`/users/${del.dataset.delUser}`, { method: 'DELETE' });
+                return loadUsers();
+            }
+            const edit = e.target.closest('[data-edit-user]');
+            if (edit) {
+                const u = JSON.parse(edit.dataset.editUser);
+                editingUserId = u.usuario_id;
+                byId('create-user-form').classList.remove('hidden');
+                byId('username').value = u.username;
+                byId('profile_id').value = u.perfil_id;
+                byId('password').required = false;
+                byId('password-hint').textContent = '(vacio para mantener actual)';
+                byId('user-active').checked = u.is_active;
+                byId('user-active-row').classList.remove('hidden');
+                byId('user-cancel').classList.remove('hidden');
+                byId('user-submit').textContent = 'Actualizar';
             }
         });
 
-        // ==========================================
-        // PERFILES (roles)
-        // ==========================================
-        const perfilMessage = byId('perfil-message');
-        const perfilForm = byId('perfil-form');
+        // ---------------- PERFILES ----------------
         let editingPerfilId = null;
-
         function resetPerfilForm() {
             editingPerfilId = null;
-            perfilForm.reset();
+            byId('perfil-form').reset();
             byId('perfil-cancel').classList.add('hidden');
-            byId('perfil-submit').textContent = 'Create profile';
-            perfilForm.classList.toggle('hidden', !can('/perfiles', 'create'));
+            byId('perfil-submit').textContent = 'Crear perfil';
+            byId('perfil-form').classList.toggle('hidden', !can('/perfiles', 'create'));
         }
 
         async function loadPerfiles() {
             resetPerfilForm();
-            try {
-                const perfiles = await apiRequest('/perfiles');
-                byId('perfiles-body').innerHTML = perfiles.length ? perfiles.map((perfil) => `
-                    <tr>
-                        <td>${escapeHtml(perfil.nombre)}</td>
-                        <td>${escapeHtml(perfil.descripcion)}</td>
-                        <td class="actions">
-                            ${can('/perfiles', 'update') ? `<button class="secondary" data-action="edit" data-id="${perfil.perfil_id}" data-nombre="${escapeHtml(perfil.nombre)}" data-descripcion="${escapeHtml(perfil.descripcion)}">Edit</button>` : ''}
-                            ${can('/perfiles', 'delete') ? `<button class="danger" data-action="delete" data-id="${perfil.perfil_id}">Delete</button>` : ''}
-                        </td>
-                    </tr>
-                `).join('') : emptyRow(3, 'No profiles yet.');
-            } catch (error) {
-                showMessage(perfilMessage, error.message);
-            }
+            const roles = await apiRequest('/roles');
+            byId('perfil-rol').innerHTML = roles.map((r) => `<option value="${r.rol_id}">${escapeHtml(r.nombre)}</option>`).join('');
+            const perfiles = await apiRequest('/perfiles');
+            byId('perfiles-body').innerHTML = perfiles.map((p) => `
+                <tr>
+                    <td>${escapeHtml(p.nombre)}</td>
+                    <td><span class="pill ok">${escapeHtml(p.rol)}</span></td>
+                    <td>${escapeHtml(p.descripcion || '-')}</td>
+                    <td class="actions">
+                        ${can('/perfiles', 'update') ? `<button class="secondary" data-edit-perf='${JSON.stringify(p).replace(/'/g, "&#39;")}'>Editar</button>` : ''}
+                        ${can('/perfiles', 'delete') ? `<button class="danger" data-del-perf="${p.perfil_id}">Eliminar</button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
         }
 
-        perfilForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const body = JSON.stringify({ nombre: byId('perfil-nombre').value, descripcion: byId('perfil-descripcion').value });
+        byId('perfil-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const body = JSON.stringify({
+                nombre: byId('perfil-nombre').value,
+                rol_id: Number(byId('perfil-rol').value),
+                descripcion: byId('perfil-descripcion').value,
+            });
             try {
-                if (editingPerfilId) {
-                    await apiRequest(`/perfiles/${editingPerfilId}`, { method: 'PUT', body });
-                    await loadPerfiles();
-                    showMessage(perfilMessage, 'Profile updated.', true);
-                } else {
-                    await apiRequest('/perfiles', { method: 'POST', body });
-                    await loadPerfiles();
-                    showMessage(perfilMessage, 'Profile created.', true);
-                }
-            } catch (error) {
-                showMessage(perfilMessage, error.message);
-            }
+                if (editingPerfilId) await apiRequest(`/perfiles/${editingPerfilId}`, { method: 'PUT', body });
+                else await apiRequest('/perfiles', { method: 'POST', body });
+                await loadPerfiles();
+                showMessage(byId('perfil-message'), 'Perfil guardado.', true);
+            } catch (err) { showMessage(byId('perfil-message'), err.message); }
         });
-
         byId('perfil-cancel').addEventListener('click', resetPerfilForm);
-
-        byId('perfiles-body').addEventListener('click', async (event) => {
-            const button = event.target.closest('button');
-            if (!button) return;
-            try {
-                if (button.dataset.action === 'delete') {
-                    if (!window.confirm('Delete this profile?')) return;
-                    await apiRequest(`/perfiles/${button.dataset.id}`, { method: 'DELETE' });
-                    await loadPerfiles();
-                    showMessage(perfilMessage, 'Profile deleted.', true);
-                } else {
-                    editingPerfilId = button.dataset.id;
-                    perfilForm.classList.remove('hidden');
-                    byId('perfil-nombre').value = button.dataset.nombre;
-                    byId('perfil-descripcion').value = button.dataset.descripcion;
-                    byId('perfil-cancel').classList.remove('hidden');
-                    byId('perfil-submit').textContent = 'Save changes';
-                    showMessage(perfilMessage, '');
-                    perfilForm.scrollIntoView({ behavior: 'smooth' });
-                }
-            } catch (error) {
-                showMessage(perfilMessage, error.message);
+        byId('perfiles-body').addEventListener('click', async (e) => {
+            const del = e.target.closest('[data-del-perf]');
+            if (del) {
+                if (!window.confirm('¿Eliminar perfil?')) return;
+                await apiRequest(`/perfiles/${del.dataset.delPerf}`, { method: 'DELETE' });
+                return loadPerfiles();
+            }
+            const edit = e.target.closest('[data-edit-perf]');
+            if (edit) {
+                const p = JSON.parse(edit.dataset.editPerf);
+                editingPerfilId = p.perfil_id;
+                byId('perfil-form').classList.remove('hidden');
+                byId('perfil-nombre').value = p.nombre;
+                byId('perfil-rol').value = p.rol_id;
+                byId('perfil-descripcion').value = p.descripcion || '';
+                byId('perfil-cancel').classList.remove('hidden');
+                byId('perfil-submit').textContent = 'Actualizar';
             }
         });
 
-        // ==========================================
-        // PERMISOS (lista desplegable de nodos por perfil)
-        // ==========================================
-        const permisoMessage = byId('permiso-message');
+        // ---------------- PERMISOS ----------------
         let permisoData = { perfiles: [], modulos: [], permisos: [] };
-
         async function loadPermisos() {
-            try {
-                permisoData = await apiRequest('/permisos');
-                const select = byId('permiso-perfil');
-                const previous = select.value;
-                select.innerHTML = '<option value="">Select a profile</option>' + permisoData.perfiles
-                    .map((p) => `<option value="${p.perfil_id}">${escapeHtml(p.nombre)}</option>`).join('');
-                if (permisoData.perfiles.some((p) => String(p.perfil_id) === previous)) select.value = previous;
-                renderPermisos();
-            } catch (error) {
-                showMessage(permisoMessage, error.message);
-            }
+            permisoData = await apiRequest('/permisos');
+            const select = byId('permiso-perfil');
+            const prev = select.value;
+            select.innerHTML = '<option value="">Selecciona un perfil</option>' +
+                permisoData.perfiles.map((p) => `<option value="${p.perfil_id}">${escapeHtml(p.nombre)}</option>`).join('');
+            if (permisoData.perfiles.some((p) => String(p.perfil_id) === prev)) select.value = prev;
+            renderPermisos();
         }
 
         function renderPermisos() {
             const tree = byId('permisos-tree');
             const perfilId = Number(byId('permiso-perfil').value);
-            if (!perfilId) {
-                tree.innerHTML = '<p class="meta">Select a profile to configure its permissions.</p>';
-                return;
-            }
-
-            const assigned = new Map(permisoData.permisos
-                .filter((p) => p.perfil_id === perfilId)
-                .map((p) => [p.modulo_id, p]));
+            if (!perfilId) { tree.innerHTML = '<p class="meta">Elige un perfil para configurar sus permisos.</p>'; return; }
+            const assigned = new Map(permisoData.permisos.filter((p) => p.perfil_id === perfilId).map((p) => [p.modulo_id, p]));
             const canSave = can('/permisos', 'update');
             const canRemove = can('/permisos', 'delete');
             const groups = groupByParent(permisoData.modulos);
-
-            const checkbox = (flag, label, checked) =>
-                `<label class="inline-check"><input type="checkbox" data-flag="${flag}" ${checked ? 'checked' : ''} ${canSave ? '' : 'disabled'}> ${label}</label>`;
-
+            const checkbox = (flag, label, checked) => `<label class="inline-check"><input type="checkbox" data-flag="${flag}" ${checked ? 'checked' : ''} ${canSave ? '' : 'disabled'}> ${label}</label>`;
             const build = (parentId) => `<ul class="tree">${(groups.get(parentId) || []).map((m) => {
-                if (m.es_nodo) {
-                    return `<li><details open><summary>${escapeHtml(m.nombre)}</summary>${build(m.modulo_id)}</details></li>`;
-                }
-                const current = assigned.get(m.modulo_id);
-                return `
-                    <li class="node-row" data-modulo="${m.modulo_id}">
-                        <span>${escapeHtml(m.nombre)}<small>${escapeHtml(m.ruta)}</small>${current ? '<span class="badge">assigned</span>' : ''}</span>
-                        <span class="checks">
-                            ${checkbox('can_create', 'Insert', current?.can_create)}
-                            ${checkbox('can_update', 'Update', current?.can_update)}
-                            ${checkbox('can_delete', 'Delete', current?.can_delete)}
-                        </span>
-                        <span class="actions">
-                            ${canSave ? `<button class="primary" data-action="save">${current ? 'Save' : 'Assign'}</button>` : ''}
-                            ${current && canRemove ? '<button class="danger" data-action="remove">Remove</button>' : ''}
-                        </span>
-                    </li>`;
+                if (m.es_nodo) return `<li><details open><summary>${escapeHtml(m.nombre)}</summary>${build(m.modulo_id)}</details></li>`;
+                const cur = assigned.get(m.modulo_id);
+                return `<li class="node-row" data-modulo="${m.modulo_id}">
+                    <span>${escapeHtml(m.nombre)} <small class="meta">${escapeHtml(m.ruta)}</small>${cur ? '<span class="badge">asignado</span>' : ''}</span>
+                    <span class="checks">${checkbox('can_create', 'Crear', cur?.can_create)}${checkbox('can_update', 'Editar', cur?.can_update)}${checkbox('can_delete', 'Eliminar', cur?.can_delete)}</span>
+                    <span class="actions">
+                        ${canSave ? `<button class="primary" data-action="save">${cur ? 'Guardar' : 'Asignar'}</button>` : ''}
+                        ${cur && canRemove ? '<button class="danger" data-action="remove">Quitar</button>' : ''}
+                    </span>
+                </li>`;
             }).join('')}</ul>`;
-
             tree.innerHTML = build(0);
         }
 
-        byId('permiso-perfil').addEventListener('change', () => {
-            showMessage(permisoMessage, '');
-            renderPermisos();
-        });
-
-        byId('permisos-tree').addEventListener('click', async (event) => {
-            const button = event.target.closest('button[data-action]');
-            if (!button) return;
-            const row = button.closest('[data-modulo]');
+        byId('permiso-perfil').addEventListener('change', renderPermisos);
+        byId('permisos-tree').addEventListener('click', async (e) => {
+            const btn = e.target.closest('button[data-action]');
+            if (!btn) return;
+            const row = btn.closest('[data-modulo]');
             const perfilId = Number(byId('permiso-perfil').value);
             const moduloId = Number(row.dataset.modulo);
-            button.disabled = true;
-            try {
-                if (button.dataset.action === 'remove') {
-                    await apiRequest(`/permisos/${perfilId}/${moduloId}`, { method: 'DELETE' });
-                } else {
-                    const flag = (name) => row.querySelector(`[data-flag="${name}"]`).checked;
-                    await apiRequest('/permisos', {
-                        method: 'PUT',
-                        body: JSON.stringify({ perfil_id: perfilId, modulo_id: moduloId, can_create: flag('can_create'), can_update: flag('can_update'), can_delete: flag('can_delete') })
-                    });
-                }
-                const done = button.dataset.action === 'remove' ? 'Access removed.' : 'Permissions saved.';
-                await loadPermisos();
-                showMessage(permisoMessage, done, true);
-            } catch (error) {
-                showMessage(permisoMessage, error.message);
-                button.disabled = false;
+            if (btn.dataset.action === 'remove') await apiRequest(`/permisos/${perfilId}/${moduloId}`, { method: 'DELETE' });
+            else {
+                const flag = (n) => row.querySelector(`[data-flag="${n}"]`).checked;
+                await apiRequest('/permisos', { method: 'PUT', body: JSON.stringify({ perfil_id: perfilId, modulo_id: moduloId, can_create: flag('can_create'), can_update: flag('can_update'), can_delete: flag('can_delete') }) });
             }
+            await loadPermisos();
+            showMessage(byId('permiso-message'), 'Permisos actualizados.', true);
         });
 
-        // ==========================================
-        // INIT
-        // ==========================================
+        // ---------------- INIT & LOGOUT ----------------
         async function initialize() {
-            const username = storedUser.username || 'User';
+            const username = storedUser.username || 'Usuario';
             byId('user-name').textContent = username;
             byId('user-avatar').textContent = username.charAt(0).toUpperCase();
-            byId('profile-display').textContent = storedUser.perfil || `Profile #${storedUser.perfilId ?? ''}`;
+            byId('profile-display').textContent = `${storedUser.perfil || ''} (${storedUser.rol || ''})`;
             try {
                 const menu = await apiRequest('/menu');
                 renderMenu(menu);
-                const first = menu.find((item) => !item.es_nodo);
+                const first = menu.find((i) => !i.es_nodo);
                 if (first) await showScreen(first.ruta);
-                else showMessage(byId('workspace-message'), 'Your profile has no accessible modules.');
-            } catch (error) {
-                showMessage(byId('workspace-message'), error.message);
+            } catch (err) {
+                showMessage(byId('workspace-message'), err.message);
             }
         }
 
         byId('logout-button').addEventListener('click', async () => {
-            try { await apiRequest('/logout', { method: 'POST' }); } catch (error) { /* la sesion ya expiro */ }
+            try { await apiRequest('/logout', { method: 'POST' }); } catch (_) {}
             localStorage.clear();
             window.location.href = 'index.html';
         });

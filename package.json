@@ -1,14 +1,15 @@
 {
   "name": "kit-emprendedores-mvp",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "MVP academico: PostgreSQL (RLS) -> ETL -> MongoDB -> dashboard por rol, con sesiones en Redis.",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "seed": "node seed.js",
-    "test": "node --check server.js && node --check routes.js && node --check db.js && node --check seed.js && node --check etl.js && node --check mongo.js && node --check cliente_redis.js && node --check kpis.js",
-    "etl": "node etl.js",
-    "docs": "node docs/generar_tabla_kpis.js"
+    "seed": "node database/seed.js",
+    "etl": "node src/etl/index.js",
+    "docs": "node docs/generar_tabla_kpis.js",
+    "check": "node scripts/check-syntax.js",
+    "test": "node scripts/check-syntax.js && node scripts/test-transform.js"
   },
   "keywords": [],
   "author": "",
