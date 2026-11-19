@@ -26,6 +26,23 @@ async function seedDatabase() {
             await client.query(`ALTER TABLE app.${table} NO FORCE ROW LEVEL SECURITY`);
         }
 
+        // ---------- Roles globales (idempotente, tenga o no UNIQUE en nombre) ----------
+        const baseRoles = ['Administrador', 'Gerente', 'Cajero'];
+        for (const roleName of baseRoles) {
+            await client.query(`
+                INSERT INTO app.roles (nombre)
+                SELECT $1
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM app.roles WHERE LOWER(TRIM(nombre)) = LOWER(TRIM($1))
+                )
+            `, [roleName]);
+        }
+
+        const rolesRows = (await client.query('SELECT rol_id, nombre FROM app.roles')).rows;
+        const rolesMap = Object.fromEntries(
+            rolesRows.map((r) => [r.nombre.trim().toLowerCase(), r.rol_id])
+        );
+
         // ---------- Tenant y perfiles ----------
         const tenantId = (await client.query(`
             INSERT INTO app.tenants (nombre, estado) VALUES ('Tienda Emprendedor MVP', 'activo') RETURNING tenant_id
@@ -37,9 +54,13 @@ async function seedDatabase() {
             ['Cajero', 'Registra ventas y consulta el catalogo'],
             ['Gerente', 'Consulta ventas y analitica del negocio'],
         ]) {
+            const rolId = rolesMap[nombre.toLowerCase()];
+            if (!rolId) {
+                throw new Error(`No se encontro el rol "${nombre}" en app.roles`);
+            }
             profiles[nombre] = (await client.query(
-                'INSERT INTO app.perfiles (tenant_id, nombre, descripcion) VALUES ($1, $2, $3) RETURNING perfil_id',
-                [tenantId, nombre, descripcion]
+                'INSERT INTO app.perfiles (tenant_id, rol_id, nombre, descripcion) VALUES ($1, $2, $3, $4) RETURNING perfil_id',
+                [tenantId, rolId, nombre, descripcion]
             )).rows[0].perfil_id;
         }
 
@@ -108,7 +129,12 @@ async function seedDatabase() {
         const [provAndina, provValle] = await ids(
             'INSERT INTO app.proveedores (tenant_id, nombre, telefono) VALUES ($1, $2, $3) RETURNING proveedor_id AS id',
             [['Distribuidora Andina', '3001234567'], ['Papeles del Valle', '3109876543']]);
-        const unidad = (await client.query("SELECT unidad_id FROM app.unidades_medida WHERE abreviacion = 'und'")).rows[0].unidad_id;
+
+        const unidadRow = (await client.query("SELECT unidad_id FROM app.unidades_medida WHERE abreviacion = 'und'")).rows[0];
+        if (!unidadRow) {
+            throw new Error("No existe la unidad de medida 'und' en app.unidades_medida");
+        }
+        const unidad = unidadRow.unidad_id;
 
         // nombre, precio, costo, categoria, proveedor, margen de stock sobrante (bajo = aparecera en "stock bajo")
         const catalog = [
@@ -138,6 +164,9 @@ async function seedDatabase() {
 
         // ---------- Ventas de los ultimos 60 dias (con combos que se compran juntos) ----------
         const metodos = (await client.query('SELECT metodo_pago_id FROM app.metodos_pago ORDER BY metodo_pago_id')).rows.map((r) => r.metodo_pago_id);
+        if (metodos.length === 0) {
+            throw new Error('No hay metodos de pago cargados en app.metodos_pago');
+        }
         const combos = [[0, 1], [2, 3], [5, 4]];
         const now = Date.now();
         const sales = [];

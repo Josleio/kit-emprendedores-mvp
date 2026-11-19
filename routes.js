@@ -6,7 +6,7 @@ const { withTenantTransaction } = require('./db');
 const { redisClient } = require('./cliente_redis');
 const { getMongo } = require('./mongo');
 const { runEtl } = require('./etl');
-const { KPIS, ROLES, catalogoPublico } = require('./kpis');
+const { KPIS, catalogoPublico } = require('./kpis');
 
 const router = express.Router();
 const jwtSecret = process.env.JWT_SECRET;
@@ -94,6 +94,9 @@ function requirePermission(screens, action) {
     };
 }
 
+// ==========================================
+// AUTENTICACION
+// ==========================================
 router.post('/login', async (req, res) => {
     const { tenant_id: tenantId, username, password } = req.body;
     const { password: ignoredPassword, ...safeBody } = req.body;
@@ -112,9 +115,11 @@ router.post('/login', async (req, res) => {
         const user = await withTenantTransaction({ tenantId: tenantNumber, perfilId: 0 }, async (client) => {
             console.log('🔎 LOGIN DB QUERY:', { tenantId: tenantNumber, username: username.trim() });
             const result = await client.query(`
-                SELECT u.usuario_id, u.tenant_id, u.perfil_id, u.username, u.password_hash, p.nombre AS perfil
+                SELECT u.usuario_id, u.tenant_id, u.perfil_id, u.username, u.password_hash,
+                       p.nombre AS perfil, p.rol_id, r.nombre AS rol
                 FROM app.usuarios u
                 JOIN app.perfiles p ON p.perfil_id = u.perfil_id
+                LEFT JOIN app.roles r ON r.rol_id = p.rol_id
                 WHERE u.tenant_id = $1 AND u.username = $2 AND u.is_active = true
             `, [tenantNumber, username.trim()]);
 
@@ -132,7 +137,7 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ error: 'Invalid credentials or tenant' });
         }
 
-        console.log('🔑 LOGIN JWT SIGNING:', { userId: user.usuario_id, tenantId: user.tenant_id, perfilId: user.perfil_id });
+        console.log('🔑 LOGIN JWT SIGNING:', { userId: user.usuario_id, tenantId: user.tenant_id, perfilId: user.perfil_id, rolId: user.rol_id });
         const jti = crypto.randomUUID();
         const token = jwt.sign({
             userId: user.usuario_id,
@@ -140,6 +145,7 @@ router.post('/login', async (req, res) => {
             perfilId: user.perfil_id,
             jti,
         }, jwtSecret, { expiresIn: SESSION_TTL });
+
         if (redisClient.isReady) {
             await redisClient.set(`session:${user.tenant_id}:${jti}`, String(user.usuario_id), { EX: SESSION_TTL });
         }
@@ -147,7 +153,14 @@ router.post('/login', async (req, res) => {
         return res.json({
             message: 'Login successful',
             token,
-            user: { id: user.usuario_id, username: user.username, perfilId: user.perfil_id, perfil: user.perfil },
+            user: {
+                id: user.usuario_id,
+                username: user.username,
+                perfilId: user.perfil_id,
+                perfil: user.perfil,
+                rolId: user.rol_id,
+                rol: user.rol,
+            },
         });
     } catch (error) {
         console.error("❌ BACKEND ERROR:", error.stack);
@@ -158,7 +171,6 @@ router.post('/login', async (req, res) => {
 // ==========================================
 // MENU (arbol de nodos visible para el perfil)
 // ==========================================
-// Una hoja se ve si el perfil tiene fila en permisos; un contenedor se ve si alguno de sus descendientes se ve.
 router.get('/menu', requireJwt, async (req, res) => {
     try {
         const rows = await withTenantTransaction(req.auth, async (client) => {
@@ -209,8 +221,6 @@ router.post('/logout', requireJwt, async (req, res) => {
 
 // ==========================================
 // CRUD GENERICO (catalogo, clientes, proveedores, categorias)
-// Cada pantalla = una fila de configuracion: tabla, columnas editables y validacion.
-// Los permisos se verifican por ruta (/catalog, /clientes, ...) y ademas por RLS en la base de datos.
 // ==========================================
 function idOrNull(value) {
     if (value === null || value === undefined || value === '') return { value: null };
@@ -239,7 +249,6 @@ function parseNumber(value, field, { min = 0, max = 99999999.99, integer = false
     return { value: integer ? number : Math.round(number * 100) / 100 };
 }
 
-// Une los resultados de varios campos: devuelve el primer error o el objeto de valores
 function collect(parts) {
     const values = {};
     for (const [key, result] of Object.entries(parts)) {
@@ -461,7 +470,6 @@ router.post('/ventas', requireJwt, requirePermission('/ventas', 'create'), async
     try {
         const result = await withTenantTransaction(req.auth, async (client) => {
             const productIds = [...lines.keys()];
-            // FOR UPDATE bloquea esas filas para que dos ventas simultaneas no dejen el stock en negativo
             const products = await client.query(`
                 SELECT producto_id, nombre, precio, costo, stock FROM app.productos
                 WHERE producto_id = ANY($1::int[]) ORDER BY producto_id FOR UPDATE`, [productIds]);
@@ -480,7 +488,6 @@ router.post('/ventas', requireJwt, requirePermission('/ventas', 'create'), async
             let total = 0;
             for (const p of products.rows) {
                 const quantity = lines.get(p.producto_id);
-                // precio y costo se copian: el historico no cambia aunque el producto cambie despues
                 await client.query(`
                     INSERT INTO app.items_venta (tenant_id, venta_id, producto_id, cantidad, precio_unitario, costo_unitario)
                     VALUES ($1, $2, $3, $4, $5, $6)`,
@@ -489,7 +496,7 @@ router.post('/ventas', requireJwt, requirePermission('/ventas', 'create'), async
                 if (updated.rowCount !== 1) {
                     const blocked = new Error('Stock update blocked by database policy');
                     blocked.code = '42501';
-                    throw blocked;                       // deshace toda la venta
+                    throw blocked;
                 }
                 total += quantity * Number(p.precio);
             }
@@ -552,24 +559,54 @@ async function mongoOr503(res) {
     }
 }
 
-// Dashboard del rol del usuario (el Administrador puede ver el de cualquier rol con ?rol=)
+// Dashboard del rol funcional del usuario (el Administrador puede consultar cualquier rol con ?rol=)
 router.get('/analitica/kpis', requireJwt, requirePermission('/analitica', 'read'), async (req, res) => {
     const db = await mongoOr503(res);
     if (!db) return undefined;
     try {
-        const perfil = await withTenantTransaction(req.auth, async (client) =>
-            (await client.query('SELECT nombre FROM app.perfiles WHERE perfil_id = $1', [req.auth.perfilId])).rows[0]?.nombre);
-        const rol = perfil === 'Administrador' && ROLES.includes(req.query.rol) ? req.query.rol : perfil;
-        if (!ROLES.includes(rol)) {
-            return res.json({ rol: perfil, roles_disponibles: [], kpis_del_rol: 0, resultados: [], sin_rol: true });
+        const { info, rolesDisponibles } = await withTenantTransaction(req.auth, async (client) => {
+            const perfilRes = await client.query(`
+                SELECT p.nombre AS perfil, r.nombre AS rol
+                FROM app.perfiles p
+                LEFT JOIN app.roles r ON r.rol_id = p.rol_id
+                WHERE p.perfil_id = $1
+            `, [req.auth.perfilId]);
+            const rolesRes = await client.query('SELECT nombre FROM app.roles ORDER BY rol_id');
+            return {
+                info: perfilRes.rows[0] || {},
+                rolesDisponibles: rolesRes.rows.map((row) => row.nombre),
+            };
+        });
+
+        const perfil = info.perfil || null;
+        const rolBase = info.rol || null;
+        const rol = rolBase === 'Administrador' && rolesDisponibles.includes(req.query.rol)
+            ? req.query.rol
+            : rolBase;
+
+        if (!rol || !rolesDisponibles.includes(rol)) {
+            return res.json({
+                rol: rolBase,
+                perfil,
+                roles_disponibles: [],
+                kpis_del_rol: 0,
+                resultados: [],
+                sin_rol: true,
+            });
         }
+
         const codigos = KPIS.filter((k) => k.roles.includes(rol)).map((k) => k.codigo);
         const resultados = await db.collection('kpi_resultados')
             .find({ tenant_id: req.auth.tenantId, codigo: { $in: codigos } }, { projection: { _id: 0 } })
-            .sort({ codigo: 1 }).toArray();
+            .sort({ codigo: 1 })
+            .toArray();
+
         return res.json({
-            rol, perfil, kpis_del_rol: codigos.length, resultados,
-            roles_disponibles: perfil === 'Administrador' ? ROLES : [rol],
+            rol,
+            perfil,
+            kpis_del_rol: codigos.length,
+            resultados,
+            roles_disponibles: rolBase === 'Administrador' ? rolesDisponibles : [rol],
         });
     } catch (error) {
         console.error("❌ BACKEND ERROR:", error.stack);
@@ -620,9 +657,14 @@ router.get('/integracion/estado', requireJwt, requirePermission('/integracion', 
                        (SELECT count(*) FROM app.clientes)::int AS clientes,
                        (SELECT count(*) FROM app.ventas)::int AS ventas,
                        (SELECT count(*) FROM app.usuarios)::int AS usuarios`)).rows[0];
-            return { conectado: true, ms: Date.now() - t0, version: info.version.split(' ').slice(0, 2).join(' '), base: info.base,
-                     funcion: 'Datos transaccionales, RBAC y aislamiento por negocio (RLS)',
-                     tablas: { productos: info.productos, clientes: info.clientes, ventas: info.ventas, usuarios: info.usuarios } };
+            return {
+                conectado: true,
+                ms: Date.now() - t0,
+                version: info.version.split(' ').slice(0, 2).join(' '),
+                base: info.base,
+                funcion: 'Datos transaccionales, RBAC y aislamiento por negocio (RLS)',
+                tablas: { productos: info.productos, clientes: info.clientes, ventas: info.ventas, usuarios: info.usuarios },
+            };
         });
     } catch (error) {
         estado.postgres = { conectado: false, error: error.message };
@@ -637,7 +679,13 @@ router.get('/integracion/estado', requireJwt, requirePermission('/integracion', 
                 sesiones += Array.isArray(batch) ? batch.length : 1;
             }
             const ttl = await redisClient.ttl(`session:${req.auth.tenantId}:${req.auth.jti}`);
-            estado.redis = { conectado: true, ms: Date.now() - t0, funcion: 'Sesiones efimeras con expiracion automatica', sesiones_activas: sesiones, ttl_sesion_actual_seg: ttl };
+            estado.redis = {
+                conectado: true,
+                ms: Date.now() - t0,
+                funcion: 'Sesiones efimeras con expiracion automatica',
+                sesiones_activas: sesiones,
+                ttl_sesion_actual_seg: ttl,
+            };
         } else {
             estado.redis = { conectado: false, error: 'Redis is not running: sessions rely only on the JWT.' };
         }
@@ -654,8 +702,14 @@ router.get('/integracion/estado', requireJwt, requirePermission('/integracion', 
         }
         colecciones.kpi_catalogo = await db.collection('kpi_catalogo').countDocuments();
         const last = await db.collection('kpi_resultados').find({ tenant_id: req.auth.tenantId }).sort({ generado_en: -1 }).limit(1).toArray();
-        estado.mongo = { conectado: true, ms: Date.now() - t0, base: db.databaseName, funcion: 'Resultados de KPI y documentos analiticos (ETL)',
-                         colecciones, ultimo_etl: last[0] ? last[0].generado_en : null };
+        estado.mongo = {
+            conectado: true,
+            ms: Date.now() - t0,
+            base: db.databaseName,
+            funcion: 'Resultados de KPI y documentos analiticos (ETL)',
+            colecciones,
+            ultimo_etl: last[0] ? last[0].generado_en : null,
+        };
     } catch (error) {
         estado.mongo = { conectado: false, error: 'MongoDB is not available.' };
     }
@@ -670,9 +724,10 @@ router.get('/users', requireJwt, requirePermission('/users', 'read'), async (req
     try {
         const users = await withTenantTransaction(req.auth, async (client) => {
             const result = await client.query(`
-                SELECT u.usuario_id, u.username, u.perfil_id, p.nombre AS perfil, u.is_active
+                SELECT u.usuario_id, u.username, u.perfil_id, p.nombre AS perfil, p.rol_id, r.nombre AS rol, u.is_active
                 FROM app.usuarios u
                 JOIN app.perfiles p ON p.perfil_id = u.perfil_id
+                LEFT JOIN app.roles r ON r.rol_id = p.rol_id
                 ORDER BY u.usuario_id
             `);
             return result.rows;
@@ -769,13 +824,33 @@ router.delete('/users/:id', requireJwt, requirePermission('/users', 'delete'), a
 });
 
 // ==========================================
-// PERFILES (roles de la tienda)
+// ROLES GLOBALES (catalogo funcional para perfiles y KPIs)
 // ==========================================
-// La lista tambien la necesita la pantalla de usuarios para elegir el perfil.
+router.get('/roles', requireJwt, requirePermission(['/perfiles', '/users', '/analitica'], 'read'), async (req, res) => {
+    try {
+        const roles = await withTenantTransaction(req.auth, async (client) => {
+            const result = await client.query('SELECT rol_id, nombre FROM app.roles ORDER BY rol_id');
+            return result.rows;
+        });
+        return res.json(roles);
+    } catch (error) {
+        console.error("❌ BACKEND ERROR:", error.stack);
+        return handleRouteError(error, res);
+    }
+});
+
+// ==========================================
+// PERFILES (roles personalizados del tenant vinculados a app.roles)
+// ==========================================
 router.get('/perfiles', requireJwt, requirePermission(['/perfiles', '/users'], 'read'), async (req, res) => {
     try {
         const perfiles = await withTenantTransaction(req.auth, async (client) => {
-            const result = await client.query('SELECT perfil_id, nombre, descripcion FROM app.perfiles ORDER BY perfil_id');
+            const result = await client.query(`
+                SELECT p.perfil_id, p.nombre, p.descripcion, p.rol_id, r.nombre AS rol
+                FROM app.perfiles p
+                LEFT JOIN app.roles r ON r.rol_id = p.rol_id
+                ORDER BY p.perfil_id
+            `);
             return result.rows;
         });
         return res.json(perfiles);
@@ -790,11 +865,21 @@ function parsePerfil(body) {
     if (nameError) {
         return { error: nameError };
     }
+    const rolId = parseId(body.rol_id);
+    if (!rolId) {
+        return { error: 'Valid role id (rol_id) is required' };
+    }
     const description = typeof body.descripcion === 'string' ? body.descripcion.trim() : '';
     if (description.length > 200) {
         return { error: 'Description must be at most 200 characters' };
     }
-    return { perfil: { nombre: body.nombre.trim(), descripcion: description || null } };
+    return {
+        perfil: {
+            nombre: body.nombre.trim(),
+            descripcion: description || null,
+            rol_id: rolId,
+        },
+    };
 }
 
 router.post('/perfiles', requireJwt, requirePermission('/perfiles', 'create'), async (req, res) => {
@@ -804,15 +889,22 @@ router.post('/perfiles', requireJwt, requirePermission('/perfiles', 'create'), a
     }
 
     try {
-        const perfil = await withTenantTransaction(req.auth, async (client) => {
-            const result = await client.query(`
-                INSERT INTO app.perfiles (tenant_id, nombre, descripcion)
-                VALUES ($1, $2, $3)
-                RETURNING perfil_id, nombre, descripcion
-            `, [req.auth.tenantId, parsed.perfil.nombre, parsed.perfil.descripcion]);
-            return result.rows[0];
+        const result = await withTenantTransaction(req.auth, async (client) => {
+            const roleCheck = await client.query('SELECT nombre FROM app.roles WHERE rol_id = $1', [parsed.perfil.rol_id]);
+            if (roleCheck.rows.length === 0) {
+                return { error: 'Selected role does not exist' };
+            }
+            const inserted = await client.query(`
+                INSERT INTO app.perfiles (tenant_id, nombre, descripcion, rol_id)
+                VALUES ($1, $2, $3, $4)
+                RETURNING perfil_id, nombre, descripcion, rol_id
+            `, [req.auth.tenantId, parsed.perfil.nombre, parsed.perfil.descripcion, parsed.perfil.rol_id]);
+            return { row: { ...inserted.rows[0], rol: roleCheck.rows[0].nombre } };
         });
-        return res.status(201).json(perfil);
+        if (result.error) {
+            return res.status(400).json({ error: result.error });
+        }
+        return res.status(201).json(result.row);
     } catch (error) {
         console.error("❌ BACKEND ERROR:", error.stack);
         return handleRouteError(error, res);
@@ -827,18 +919,29 @@ router.put('/perfiles/:id', requireJwt, requirePermission('/perfiles', 'update')
     }
 
     try {
-        const perfil = await withTenantTransaction(req.auth, async (client) => {
-            const result = await client.query(`
-                UPDATE app.perfiles SET nombre = $1, descripcion = $2
-                WHERE perfil_id = $3
-                RETURNING perfil_id, nombre, descripcion
-            `, [parsed.perfil.nombre, parsed.perfil.descripcion, perfilId]);
-            return result.rows[0];
+        const result = await withTenantTransaction(req.auth, async (client) => {
+            const roleCheck = await client.query('SELECT nombre FROM app.roles WHERE rol_id = $1', [parsed.perfil.rol_id]);
+            if (roleCheck.rows.length === 0) {
+                return { error: 'Selected role does not exist' };
+            }
+            const updated = await client.query(`
+                UPDATE app.perfiles
+                SET nombre = $1, descripcion = $2, rol_id = $3
+                WHERE perfil_id = $4
+                RETURNING perfil_id, nombre, descripcion, rol_id
+            `, [parsed.perfil.nombre, parsed.perfil.descripcion, parsed.perfil.rol_id, perfilId]);
+            if (!updated.rows[0]) {
+                return { notFound: true };
+            }
+            return { row: { ...updated.rows[0], rol: roleCheck.rows[0].nombre } };
         });
-        if (!perfil) {
+        if (result.error) {
+            return res.status(400).json({ error: result.error });
+        }
+        if (result.notFound) {
             return res.status(404).json({ error: 'Profile not found in this tenant' });
         }
-        return res.json(perfil);
+        return res.json(result.row);
     } catch (error) {
         console.error("❌ BACKEND ERROR:", error.stack);
         return handleRouteError(error, res);
@@ -874,7 +977,12 @@ const MODULE_COLUMNS = 'modulo_id, nombre, ruta, padre_id, orden, es_nodo';
 router.get('/permisos', requireJwt, requirePermission('/permisos', 'read'), async (req, res) => {
     try {
         const data = await withTenantTransaction(req.auth, async (client) => {
-            const perfiles = await client.query('SELECT perfil_id, nombre FROM app.perfiles ORDER BY perfil_id');
+            const perfiles = await client.query(`
+                SELECT p.perfil_id, p.nombre, p.rol_id, r.nombre AS rol
+                FROM app.perfiles p
+                LEFT JOIN app.roles r ON r.rol_id = p.rol_id
+                ORDER BY p.perfil_id
+            `);
             const modulos = await client.query(`SELECT ${MODULE_COLUMNS} FROM app.modulos ORDER BY orden, modulo_id`);
             const permisos = await client.query('SELECT perfil_id, modulo_id, can_create, can_update, can_delete FROM app.permisos');
             return { perfiles: perfiles.rows, modulos: modulos.rows, permisos: permisos.rows };
