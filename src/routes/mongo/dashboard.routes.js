@@ -29,6 +29,8 @@ const router = express.Router();
 
 // Registra el error en consola (una sola linea) y responde 500 con un mensaje legible para la pantalla
 function fallo(res, mensaje, error) {
+    // El detalle tecnico queda en el log y tambien se devuelve para facilitar
+    // el diagnostico desde el cliente durante el desarrollo.
     console.error(`❌ ${mensaje}:`, error.stack);
     return res.status(500).json({ error: mensaje, details: error.message });
 }
@@ -38,6 +40,8 @@ async function mongoOr503(res) {
     try {
         return await getMongo();
     } catch (error) {
+        // Una respuesta 503 distingue una dependencia apagada de un error
+        // interno de la consulta o de la aplicacion.
         res.status(503).json({ error: 'MongoDB is not available. Check that the MongoDB service is running.' });
         return null;
     }
@@ -66,6 +70,8 @@ router.get('/analitica/kpis', requireJwt, requirePermission('/analitica', 'read'
         }
         const codigos = KPIS.filter((k) => k.roles.includes(rolVista)).map((k) => k.codigo);
 
+        // Solo se solicitan los codigos autorizados para el rol. El tenant_id
+        // impide que un negocio vea resultados almacenados para otro negocio.
         const resultados = await db.collection('kpi_resultados')
             .find({ tenant_id: req.auth.tenantId, codigo: { $in: codigos } }, { projection: { _id: 0 } })
             .sort({ codigo: 1 })
@@ -102,6 +108,8 @@ router.get('/analitica/etl-log', requireJwt, requirePermission('/analitica', 'up
         const docs = await db.collection('kpi_resultados')
             .find({ tenant_id: req.auth.tenantId }, { projection: { _id: 0 } })
             .toArray();
+        // El frontend usa documentos como mapa codigo -> resultado para localizar
+        // rapidamente cada KPI mientras recorre los pasos de la bitacora.
         return res.json({ pasos, documentos: Object.fromEntries(docs.map((d) => [d.codigo, d])) });
     } catch (error) {
         return fallo(res, 'Could not read the ETL log', error);

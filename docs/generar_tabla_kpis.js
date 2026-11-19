@@ -33,7 +33,7 @@ La documentacion de los KPI tambien queda en MongoDB (\`kpi_catalogo\`).
 | Base de datos | Funcion en la solucion |
 |---|---|
 | PostgreSQL | Datos transaccionales (ventas, pagos, stock), permisos por perfil y aislamiento entre negocios con RLS. |
-| Redis | Sesiones efimeras: el login crea \`session:{negocio}:{id}\` con expiracion; cada peticion valida que siga activa. |
+| Redis | Sesiones efimeras: el login usa el username como clave y la contraseña como valor con expiracion; cada peticion valida que siga activa. |
 | MongoDB | Resultados de los KPI, bitacora del ETL y documentos analiticos. Alimenta el dashboard por rol. |
 
 La pantalla **Analitica > Integracion** muestra el estado en vivo de las tres bases.

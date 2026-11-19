@@ -33,6 +33,8 @@ const suma = (filas, fn) => filas.reduce((s, f) => s + fn(f), 0);
 function sumarPor(filas, claveFn, valorFn) {
     const grupos = new Map();
     for (const f of filas) {
+        // Map permite acumular categorias, productos o metodos sin asumir
+        // que vienen ordenados desde PostgreSQL.
         const clave = claveFn(f);
         grupos.set(clave, (grupos.get(clave) || 0) + valorFn(f));
     }
@@ -55,6 +57,8 @@ function derivar(datos) {
     // una fila por venta vigente con su total
     const porVenta = new Map();
     for (const l of lineasVigentes) {
+        // Cada venta puede tener varias lineas; aqui se reduce a una fila
+        // para contar ventas y calcular el ticket promedio correctamente.
         if (!porVenta.has(l.venta_id)) {
             porVenta.set(l.venta_id, { venta_id: l.venta_id, fecha: new Date(l.fecha_venta), cliente_id: l.cliente_id, total: 0 });
         }
@@ -218,6 +222,8 @@ function resumir(resultado) {
 // ---------------------------------------------------------------------------
 // catalogo_productos: un documento por producto con categoria, proveedor, unidad y variantes anidadas
 function armarCatalogoProductos(datos, tenantId) {
+    // Mongo recibe un documento por producto, con sus variantes dentro del mismo
+    // documento para que el catalogo pueda mostrarse sin joins adicionales.
     return datos.productos.map((p) => ({
         tenant_id: tenantId, producto_id: p.producto_id, nombre: p.nombre, referencia: p.referencia_almacen,
         precio: num(p.precio), costo: num(p.costo), stock: num(p.stock),
@@ -242,6 +248,8 @@ function armarVentasResumen(datos, tenantId) {
 
     const ventas = new Map();
     for (const l of datos.lineasVenta) {
+        // La primera linea crea el encabezado; las siguientes solo agregan items
+        // y actualizan los acumulados de total y costo.
         if (!ventas.has(l.venta_id)) {
             const tieneCliente = l.cliente_id !== null && l.cliente_id !== undefined;
             ventas.set(l.venta_id, {
@@ -289,6 +297,8 @@ function transformar(datos, { tenantId, now = new Date() }) {
         };
         const t0 = Date.now();
         try {
+            // Cada KPI se aisla en su propio try/catch: una formula defectuosa
+            // queda registrada sin impedir calcular las demas.
             if (!formula) throw new Error(`No existe formula para ${kpi.codigo} en transform.js`);
             if (errorDerivados) throw errorDerivados;
             const resultado = formula.calcular(datos, derivados, now);
@@ -314,6 +324,8 @@ function transformar(datos, { tenantId, now = new Date() }) {
         };
         const t0 = Date.now();
         try {
+            // La funcion armar recibe todos los datos, pero solo se invoca aqui
+            // para que el fallo de un documento no detenga el otro.
             documentos[clave] = armar();
             paso.filas_extraidas = filas();
             paso.resultado_resumen = `${documentos[clave].length} documentos`;

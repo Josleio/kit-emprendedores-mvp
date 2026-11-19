@@ -52,8 +52,13 @@ router.post('/login', async (req, res) => {
         }
 
         // 2) JWT (usuario, negocio, perfil, jti) + sesion efimera en Redis
-        const { token, jti } = firmarToken({ userId: user.usuario_id, tenantId: user.tenant_id, perfilId: user.perfil_id });
-        await crearSesion(user.tenant_id, jti, user.usuario_id);
+        const { token, jti } = firmarToken({
+            userId: user.usuario_id,
+            tenantId: user.tenant_id,
+            perfilId: user.perfil_id,
+            username: user.username,
+        });
+        await crearSesion(user.tenant_id, jti, password);
 
         return res.json({
             message: 'Login successful',

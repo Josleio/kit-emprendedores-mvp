@@ -45,6 +45,8 @@ async function ejecutarPython(tenantId) {
     let ultimoError = 'Python no esta instalado';
     for (const bin of candidatos) {
         try {
+            // El script se ejecuta como proceso independiente porque usa su propio
+            // entorno Python y escribe directamente el KPI K14 en MongoDB.
             await execFileAsync(bin, [SCRIPT_PYTHON, '--tenant', String(tenantId)], { timeout: 60000 });
             return null;                                   // Python escribio K14 y su propia fila en etl_log
         } catch (error) {
@@ -74,12 +76,15 @@ async function runEtl(tenantId) {
 
     // 3. CARGAR: MongoDB (kpi_resultados, catalogo_productos, ventas_resumen, kpi_catalogo) + etl_log
     const pasos = [...pasosExtraccion, ...pasosTransformacion];
+    // La carga recibe tambien la bitacora para poder marcar individualmente los
+    // KPI o documentos que fallen sin perder los resultados que si fueron validos.
     await cargar(db, { tenantId, runId, now, kpis, documentos, pasos });
 
     // 4. ANALITICA: Python lee ventas_resumen y escribe K14 (si no esta disponible, el paso queda OMITIDO)
     const omitido = await ejecutarPython(tenantId);
     if (omitido) await registrarPaso(db, tenantId, runId, omitido);
 
+    // Solo los pasos K* son indicadores; E* y D* describen extracciones y documentos.
     const pasosNode = pasos.filter((p) => p.codigo.startsWith('K'));
     return {
         run_id: runId, generado_en: now,

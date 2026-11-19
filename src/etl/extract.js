@@ -1,7 +1,7 @@
 // ============================================================================
 // ETL · FASE 1: EXTRACCION   (PostgreSQL -> memoria)
 // ----------------------------------------------------------------------------
-// Toma de PostgreSQL los datos crudos del negocio, SIN calcular ningun KPI.
+// Toma de PostgreSQL los datos crudos del negocio.
 // Se extraen 4 conjuntos de datos, una sola vez, y de ellos salen los 13 KPI de Node
 // y los dos documentos de Mongo (catalogo_productos y ventas_resumen).
 //
@@ -19,6 +19,8 @@
 const { withTenantTransaction } = require('../config/postgres');
 
 // Cada conjunto: codigo de paso, nombre, tablas de origen y consulta SQL
+// Mantener los conjuntos separados facilita que cada KPI use solo las filas que necesita
+// y permite registrar por separado cuanto tardo cada consulta.
 const CONJUNTOS = [
     {
         clave: 'lineasVenta', paso: 'E1', nombre: 'Extraccion: lineas de venta',
@@ -77,12 +79,16 @@ const CONJUNTOS = [
 //   pasos : un registro por conjunto (E1..E4) con filas y milisegundos, para el etl_log
 // Si una consulta falla, la excepcion sube: sin datos no hay nada que transformar.
 async function extraer(tenantId) {
+    // La transaccion aplica el tenant a PostgreSQL antes de ejecutar cualquier consulta.
+    // Por eso las consultas no necesitan repetir el filtro tenant_id en cada WHERE.
     return withTenantTransaction({ tenantId, perfilId: 0 }, async (client) => {
         const datos = {};
         const pasos = [];
         for (const conjunto of CONJUNTOS) {
             const inicio = new Date();
             const t0 = Date.now();
+            // rows conserva los nombres y tipos que entrega pg; la conversion numerica
+            // se hace despues, durante la transformacion.
             datos[conjunto.clave] = (await client.query(conjunto.sql)).rows;
             pasos.push({
                 codigo: conjunto.paso, nombre: conjunto.nombre, fase: 'extraccion', roles: [],

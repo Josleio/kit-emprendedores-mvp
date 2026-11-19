@@ -112,10 +112,14 @@ const KPIS = [
 ];
 
 // true si el KPI lo calcula Node.js (transform.js); false si lo calcula Python (K14)
+// Esta separacion evita que el transformador de Node intente calcular un indicador
+// cuya fuente y algoritmo pertenecen al script de analitica.
 const esNode = (kpi) => kpi.operador === NODE;
 
 // Metadatos para mostrar/guardar (kpi_catalogo en MongoDB, GET /api/analitica/catalogo y docs/TABLA_KPIS.md)
 function catalogoPublico() {
+    // Se devuelve una copia con solo campos publicables; el orden agrupa por rol
+    // para que API, dashboard y documentacion presenten la misma lista.
     return KPIS.map((k) => ({
         codigo: k.codigo, nombre: k.nombre, roles: k.roles, descripcion: k.descripcion, formula: k.formula,
         tablas: k.tablas, visual: k.visual, operador: k.operador, coleccion: 'kpi_resultados',

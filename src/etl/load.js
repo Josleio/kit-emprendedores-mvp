@@ -22,6 +22,8 @@ const PASO_DE_COLECCION = { catalogo_productos: 'D1', ventas_resumen: 'D2' };
 // 1. INDICES (garantizan unicidad y hacen idempotente la carga)
 // ---------------------------------------------------------------------------
 async function asegurarIndices(db) {
+    // Los indices se crean de forma segura en cada corrida: MongoDB no duplica
+    // un indice existente y queda garantizada la unicidad de los documentos clave.
     await db.collection('kpi_catalogo').createIndex({ codigo: 1 }, { unique: true });
     await db.collection('kpi_resultados').createIndex({ tenant_id: 1, codigo: 1 }, { unique: true });
     await db.collection('etl_log').createIndex({ tenant_id: 1, run_id: 1 });
@@ -35,12 +37,16 @@ async function asegurarIndices(db) {
 // Documentacion de los KPI (tambien vive en MongoDB)
 async function cargarCatalogo(db) {
     for (const kpi of catalogoPublico()) {
+        // replaceOne + upsert actualiza la documentacion si cambio el catalogo
+        // y crea el registro si es la primera corrida.
         await db.collection('kpi_catalogo').replaceOne({ codigo: kpi.codigo }, kpi, { upsert: true });
     }
 }
 
 // Resultado de un KPI: reemplaza el documento anterior de ese negocio y KPI
 async function cargarKpi(db, kpi, { runId, now }) {
+    // La misma clave logica siempre apunta al mismo documento por negocio y KPI.
+    // Asi repetir el ETL no crea historicos duplicados.
     await db.collection('kpi_resultados').replaceOne(
         { tenant_id: kpi.tenant_id, codigo: kpi.codigo },
         { ...kpi, generado_en: now, run_id: runId },
@@ -50,6 +56,8 @@ async function cargarKpi(db, kpi, { runId, now }) {
 
 // Coleccion documental completa de un negocio
 async function cargarDocumentos(db, coleccion, tenantId, documentos) {
+    // Estas colecciones representan una fotografia completa del negocio:
+    // se elimina la fotografia anterior y se inserta la nueva en un solo lote.
     await db.collection(coleccion).deleteMany({ tenant_id: tenantId });
     if (documentos.length) await db.collection(coleccion).insertMany(documentos);
 }
@@ -89,6 +97,8 @@ async function cargar(db, { tenantId, runId, now, kpis, documentos, pasos }) {
         try {
             await fn();
         } catch (error) {
+            // El error se guarda en la bitacora y no interrumpe los siguientes KPI.
+            // Esto permite que el dashboard muestre los resultados disponibles.
             const p = paso(codigo);
             if (p) { p.estado = 'ERROR'; p.error = `Carga: ${error.message}`; }
         }
@@ -101,6 +111,8 @@ async function cargar(db, { tenantId, runId, now, kpis, documentos, pasos }) {
     }
     const cargados = {};
     for (const [coleccion, docs] of Object.entries(documentos)) {
+        // null significa que la transformacion de esa coleccion fallo.
+        // En ese caso se conserva la informacion anterior en MongoDB.
         if (docs === null) continue;
         await medir(PASO_DE_COLECCION[coleccion], () => cargarDocumentos(db, coleccion, tenantId, docs));
         cargados[coleccion] = docs.length;

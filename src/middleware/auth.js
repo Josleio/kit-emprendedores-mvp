@@ -1,9 +1,9 @@
 // ============================================================================
 // AUTENTICACION: JWT + SESION EN REDIS
 // ----------------------------------------------------------------------------
-// firmarToken : crea el JWT del login (lleva usuario, negocio, perfil y un jti unico).
+// firmarToken : crea el JWT del login (lleva usuario, negocio, perfil y el username como jti).
 // requireJwt  : middleware de las rutas protegidas. Verifica el JWT y que la sesion
-//               (session:{negocio}:{jti}) siga viva en Redis. Deja los datos en req.auth.
+//               ({username}) siga viva en Redis. Deja los datos en req.auth.
 // ============================================================================
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
@@ -11,8 +11,8 @@ const { TTL_SESION, validarSesion } = require('../services/sesiones');
 
 const jwtConfigurado = () => Boolean(process.env.JWT_SECRET);
 
-function firmarToken({ userId, tenantId, perfilId }) {
-    const jti = crypto.randomUUID();
+function firmarToken({ userId, tenantId, perfilId, username }) {
+    const jti = username || crypto.randomUUID();
     const token = jwt.sign({ userId, tenantId, perfilId, jti }, process.env.JWT_SECRET, { expiresIn: TTL_SESION });
     return { token, jti };
 }
