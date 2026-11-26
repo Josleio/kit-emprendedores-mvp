@@ -4,3 +4,9 @@ node_modules/
 # Credenciales y configuración (CRÍTICO)
 .env
 
+# Salida generada por Python (CSV / PNG)
+analitica/salida/
+
+# Python
+__pycache__/
+*.pyc
